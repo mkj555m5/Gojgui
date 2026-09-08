@@ -29,6 +29,18 @@ try:
 except ImportError:
     py7zr = None
 
+# PTY (pseudo-terminal): يجعل الخوادم تعتقد أنها تعمل داخل ترمينال حقيقي
+# → ألوان ANSI كاملة + أشرطة تقدم + دعم الإدخال التفاعلي (input / prompts)
+# متوفر على Linux/macOS (Railway = Linux). على Windows نرجع للأنابيب العادية.
+try:
+    import pty as _pty_mod
+    import fcntl as _fcntl_mod
+    import struct as _struct_mod
+    import termios as _termios_mod
+    PTY_AVAILABLE = hasattr(_pty_mod, "openpty")
+except (ImportError, AttributeError):
+    PTY_AVAILABLE = False
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # دليل البيانات: على Railway صل ب Volume وحدد DATA_DIR=/data حتى لا تُفقد الحسابات عند إعادة النشر
@@ -44,6 +56,9 @@ app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024  # حد الرفع 512MB
 
 running_procs = {}          # proc_key -> Popen
 ram_monitors = {}           # proc_key -> Thread
+pty_masters = {}            # proc_key -> master fd ( طرفية حقيقية للخادم )
+pty_readers = {}            # proc_key -> Thread ( قارئ مخرجات PTY )
+TTY_COLS, TTY_ROWS = 120, 30  # أبعاد الطرفية الافتراضية
 USERS_FILE = os.path.join(DATA_DIR, "users.json")
 REMEMBER_TOKENS_FILE = os.path.join(DATA_DIR, "remember_tokens.json")
 
@@ -373,12 +388,145 @@ def stop_ram_monitor(proc_key):
     if mon and hasattr(mon, "stop_event"):
         mon.stop_event.set()
 
+def autodetect_startup(server_dir, language):
+    """كشف تلقائي للملف الرئيسي: يبحث عن الأسماء الشائعة ثم أي ملف قابل للتشغيل"""
+    candidates = (["main.py", "app.py", "bot.py", "server.py", "run.py", "index.py",
+                   "start.py", "manage.py", "wsgi.py"] if language != "nodejs" else
+                  ["index.js", "app.js", "server.js", "bot.js", "main.js", "start.js",
+                   "run.js", "server.mjs", "index.mjs"])
+    for name in candidates:
+        if os.path.isfile(os.path.join(server_dir, name)):
+            return name
+    # أي ملف بالامتداد المناسب في الجذر
+    ext = ".js" if language == "nodejs" else ".py"
+    try:
+        for name in sorted(os.listdir(server_dir)):
+            if name.endswith(ext) and os.path.isfile(os.path.join(server_dir, name)):
+                return name
+    except OSError:
+        pass
+    return None
+
 def append_log(server_dir, text):
     try:
         with open(os.path.join(server_dir, "server.log"), "a", encoding="utf-8") as f:
             f.write(text + "\n")
     except Exception:
         pass
+
+def append_log_raw(server_dir, data):
+    """كتابة مخرجات الخادم الخام (بايتات UTF-8 مع أكواد ANSI) إلى السجل كما هي —
+    الواجهة تفسّر أكواد الألوان لاحقاً فتظهر بالألوان والرموز كما في الترمينال الحقيقي"""
+    try:
+        with open(os.path.join(server_dir, "server.log"), "ab") as f:
+            f.write(data)
+    except Exception:
+        pass
+
+def read_log_tail(server_dir, max_chars=100000):
+    """قراءة ذيل السجل بأداء عالٍ (بدون قراءة الملف كاملاً) مع الحفاظ على أكواد ANSI"""
+    log_path = os.path.join(server_dir, "server.log")
+    try:
+        size = os.path.getsize(log_path)
+        if size == 0:
+            return ""
+        with open(log_path, "rb") as f:
+            f.seek(max(0, size - max_bytes_for_chars(max_chars)))
+            raw = f.read()
+        # نضمن عدم البدء بمنتصف حرف UTF-8 متعدد البايتات
+        text = raw.decode("utf-8", errors="ignore")
+        return text[-max_chars:]
+    except Exception:
+        return ""
+
+def max_bytes_for_chars(max_chars):
+    """حجم بالبايتات يكفي لعدد الأحرف المطلوب (UTF-8 حتى 4 بايت للحرف)"""
+    return max_chars * 4
+
+def pty_reader_loop(proc_key, server_dir, master_fd, proc):
+    """قارئ مخرجات الطرفية: ينقل كل ما يكتبه الخادم (بالألوان والرموز) إلى السجل الخام"""
+    try:
+        while True:
+            try:
+                data = os.read(master_fd, 65536)
+            except OSError:
+                data = b""
+            if not data:
+                break
+            append_log_raw(server_dir, data)
+    finally:
+        # انتهاء التيار: العملية خرجت أو أُغلقت الطرفية
+        try:
+            os.close(master_fd)
+        except OSError:
+            pass
+        pty_masters.pop(proc_key, None)
+        pty_readers.pop(proc_key, None)
+        try:
+            code = proc.poll()
+            if code is None:
+                time.sleep(0.3)
+                code = proc.poll()
+            append_log(server_dir, f"[SYSTEM] Process exited with code {code if code is not None else 'unknown'}")
+        except Exception:
+            pass
+
+def close_pty(proc_key):
+    """إغلاق طرفية الخادم (عند الإيقاف/إعادة التشغيل/الحذف)"""
+    master_fd = pty_masters.pop(proc_key, None)
+    if master_fd is not None:
+        try:
+            os.close(master_fd)
+        except OSError:
+            pass
+
+def _spawn_server_proc(cmd, server_dir, log_path, child_env, proc_key):
+    """تشغيل خادم داخل طرفية حقيقية (PTY) إن أمكن، وإلا بأنابيب عادية.
+
+    الطرفية الحقيقية تمنح الخادم:
+      - ألوان ANSI كاملة (256 لون + RGB) لأن isatty() = True
+      - إدخال تفاعلي حقيقي (input/prompts) مع صدى للكتابة مثل الترمينال
+      - إشارة Ctrl+C عبر كتابة \\x03 مثل أي ترمينال
+    """
+    if PTY_AVAILABLE:
+        try:
+            master_fd, slave_fd = _pty_mod.openpty()
+            # ضبط أبعاد الطرفية (تؤثر على عرض المخرجات وأشرطة التقدم)
+            try:
+                winsz = _struct_mod.pack("HHHH", TTY_ROWS, TTY_COLS, 0, 0)
+                _fcntl_mod.ioctl(slave_fd, _termios_mod.TIOCSWINSZ, winsz)
+            except Exception:
+                pass
+
+            def _make_ctty():
+                # تُنفّذ داخل العملية الابن بعد dup2: fd 0 = الطرفية بالتأكيد
+                os.setsid()
+                try:
+                    _fcntl_mod.ioctl(0, _termios_mod.TIOCSCTTY, 0)
+                except Exception:
+                    pass
+
+            proc = subprocess.Popen(
+                cmd, cwd=server_dir, stdin=slave_fd, stdout=slave_fd, stderr=slave_fd,
+                preexec_fn=_make_ctty, env=child_env, close_fds=True)
+            os.close(slave_fd)  # الأب لا يحتاجها — EOF يصل عند خروج الخادم
+            pty_masters[proc_key] = master_fd
+            reader = threading.Thread(target=pty_reader_loop,
+                                      args=(proc_key, server_dir, master_fd, proc), daemon=True)
+            pty_readers[proc_key] = reader
+            reader.start()
+            return proc, True
+        except Exception:
+            # أي فشل في إنشاء PTY → تراجع آمن للأنابيب
+            pass
+
+    # الوضع الاحتياطي: أنابيب (Windows أو بيئة بلا PTY) مع فرض الألوان
+    log_file = open(log_path, "a", encoding="utf-8")
+    child_env.setdefault("PYTHONUNBUFFERED", "1")
+    proc = subprocess.Popen(cmd, cwd=server_dir, stdout=log_file, stderr=log_file,
+                            stdin=subprocess.PIPE, universal_newlines=True,
+                            start_new_session=True, env=child_env)
+    return proc, False
 
 def ram_monitor_loop(proc_key, pid, ram_limit_mb, server_dir):
     """مراقبة استهلاك الرام للعملية وإيقافها عند التجاوز"""
@@ -527,7 +675,70 @@ def extract_archive(archive_path, dest):
         extract_rar(archive_path, dest)
     else:
         raise ValueError("نوع الأرشيف غير مدعوم")
-    return kind
+
+def unique_dest_path(base_dir, name):
+    """اسم فريد داخل base_dir عند التعارض: file.txt → file-1.txt → file-2.txt ..."""
+    candidate = os.path.join(base_dir, name)
+    if not os.path.exists(candidate):
+        return candidate
+    root, ext = os.path.splitext(name)
+    for i in range(1, 1000):
+        candidate = os.path.join(base_dir, f"{root}-{i}{ext}")
+        if not os.path.exists(candidate):
+            return candidate
+    raise ValueError(f"تعذر إيجاد اسم فريد لـ {name}")
+
+def extract_archive_safely(archive_path, dest_dir, mode="here"):
+    """فك ضغط احترافي بلا مفاجآت:
+
+    mode="here"   : الاستخراج مباشرة داخل dest_dir نفسه (بدون مجلد باسم الأرشيف!)
+                    إن وُجد تعارض بأسماء يُعاد التسمية تلقائياً (file-1.txt)
+    mode="subfolder": الاستخراج داخل مجلد جديد باسم الأرشيف (السلوك التقليدي)
+
+    يعيد (عدد_العناصر, اسم_المجلد_أو_None)
+    """
+    archive_name = os.path.basename(archive_path)
+
+    if mode == "subfolder":
+        base_name = os.path.splitext(archive_name)[0]
+        if base_name.endswith((".tar", ".tgz")):
+            base_name = os.path.splitext(base_name)[0]
+        target = unique_dest_path(os.path.dirname(archive_path) if False else dest_dir, base_name)
+        os.makedirs(target, exist_ok=True)
+        extract_archive(archive_path, target)
+        count = sum(len(files) for _, _, files in os.walk(target))
+        return count, os.path.basename(target)
+
+    # ===== الوضع المباشر (here): الاستخراج في نفس المجلد =====
+    # 1) فك مؤقت في مجلد مخفي داخل dest_dir (حماية من فك ضغط فاشل يترك نصف الملفات)
+    tmp_dir = os.path.join(dest_dir, f".gx-extract-{secrets.token_hex(4)}")
+    os.makedirs(tmp_dir, exist_ok=True)
+    try:
+        extract_archive(archive_path, tmp_dir)
+    except Exception:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        raise
+
+    # 2) نقل كل عنصر من المستوى الأعلى إلى dest_dir مباشرة (مع تسمية فريدة عند التعارض)
+    moved = 0
+    try:
+        for name in sorted(os.listdir(tmp_dir)):
+            src = os.path.join(tmp_dir, name)
+            dst = unique_dest_path(dest_dir, name)
+            shutil.move(src, dst)
+            moved += 1
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    # 3) عدّ الملفات المستخرجة فعلياً
+    total_files = 0
+    for name in os.listdir(dest_dir):
+        p = os.path.join(dest_dir, name)
+        if os.path.isdir(p) and not name.startswith(".gx-extract"):
+            total_files += sum(len(files) for _, _, files in os.walk(p))
+        elif os.path.isfile(p):
+            total_files += 1
+    return moved, None
 
 def create_zip(source_items, zip_path):
     """ضغط ملفات/مجلدات في ملف zip"""
@@ -811,17 +1022,13 @@ def get_stats(folder):
     meta = load_meta(folder)
     quotas = get_user_quotas(username)
     disk_used = fmt_mb(get_dir_size(server_dir))
-    log_path = os.path.join(server_dir, "server.log")
-    logs = ""
-    if os.path.exists(log_path):
-        try:
-            with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
-                logs = f.read()[-100000:]
-        except Exception:
-            pass
+    # السجل الخام مع أكواد ANSI — الواجهة تُحوّلها إلى ألوان ورموز حقيقية
+    logs = read_log_tail(server_dir)
 
-    # هل يستقبل الخادم مدخلات من الكونسول؟
-    interactive = bool(proc and proc.stdin is not None and not proc.stdin.closed)
+    # هل يستقبل الخادم مدخلات من الكونسول؟ (طرفية حقيقية أو أنبوب مفتوح)
+    interactive = bool(proc_key in pty_masters or
+                       (proc and proc.stdin is not None and not proc.stdin.closed))
+    console_pty = proc_key in pty_masters
 
     return jsonify({
         "status": "Running" if running else "Offline",
@@ -833,7 +1040,8 @@ def get_stats(folder):
         "startup_file": meta.get("startup_file", ""),
         "ram_limit_mb": quotas["ram_limit_mb"],
         "disk_used_mb": disk_used,
-        "interactive": interactive
+        "interactive": interactive,
+        "console_pty": console_pty
     })
 
 @app.route("/server/action/<folder>/<act>", methods=["POST"])
@@ -853,6 +1061,7 @@ def server_action(folder, act):
         except Exception:
             pass
         stop_ram_monitor(proc_key)
+        close_pty(proc_key)
         if act in ("stop", "restart", "kill"):
             running_procs.pop(proc_key, None)
 
@@ -864,13 +1073,23 @@ def server_action(folder, act):
     language = meta.get("language", "python")
     startup = meta.get("startup_file")
 
+    # كشف تلقائي للملف الرئيسي إذا لم يحدده المستخدم
     if not startup:
-        return jsonify({"success": False, "message": "No main file set."})
+        detected = autodetect_startup(server_dir, language)
+        if detected:
+            startup = detected
+            meta["startup_file"] = detected
+            save_meta(folder, meta)
+            append_log(server_dir, f"[SYSTEM] Auto-detected main file: {detected}")
+        else:
+            return jsonify({"success": False,
+                            "message": "لا يوجد ملف رئيسي — ارفع ملف main.py / index.js أو حدّده من بطاقة (الملف الرئيسي) أو من زر ⚡ بجانب الملف"})
 
     startup = sanitize_rel_path(startup)
     startup_path = safe_join(server_dir, startup)
     if not startup_path or not os.path.exists(startup_path):
-        return jsonify({"success": False, "message": "الملف غير موجود"})
+        return jsonify({"success": False,
+                        "message": f"الملف الرئيسي ({startup}) غير موجود — أعد تحديده من زر الملف الرئيسي"})
 
     log_path = os.path.join(server_dir, "server.log")
     open(log_path, "w").close()
@@ -884,18 +1103,19 @@ def server_action(folder, act):
 
     quotas = get_user_quotas(username)
     append_log(server_dir, f"[SYSTEM] Starting {language} app: {startup} (RAM limit: {quotas['ram_limit_mb']} MB)")
-    append_log(server_dir, "[SYSTEM] Console input enabled - you can send text/commands from the panel.")
+    append_log(server_dir, "[SYSTEM] Console is a real TTY: full colors + interactive input enabled.")
 
-    log_file = open(log_path, "a")
-    # stdin=PIPE: يسمح بإرسال نص/أوامر للخادم من الكونسول
-    # start_new_session: مجموعة عمليات مستقلة حتى لا تؤثر إشارة Ctrl+C على لوحة التحكم نفسها
+    # بيئة الخادم: طرفية ملونة حقيقية (TERM=xterm-256color يجعل الأدوات تطبع ألوانها)
     child_env = dict(os.environ)
-    child_env.setdefault("PYTHONUNBUFFERED", "1")
-    child_env.setdefault("FORCE_COLOR", "0")
+    child_env["TERM"] = "xterm-256color"
+    child_env["COLUMNS"] = str(TTY_COLS)
+    child_env["LINES"] = str(TTY_ROWS)
+    child_env["PYTHONUNBUFFERED"] = "1"
+    child_env.pop("NO_COLOR", None)
+    child_env.pop("FORCE_COLOR", None)
+
     try:
-        proc = subprocess.Popen(cmd, cwd=server_dir, stdout=log_file, stderr=log_file,
-                                stdin=subprocess.PIPE, universal_newlines=True,
-                                start_new_session=True, env=child_env)
+        proc, used_pty = _spawn_server_proc(cmd, server_dir, log_path, child_env, proc_key)
     except Exception as e:
         append_log(server_dir, f"[ERROR] Failed to start: {e}")
         return jsonify({"success": False, "message": f"فشل التشغيل: {e}"})
@@ -903,7 +1123,7 @@ def server_action(folder, act):
     running_procs[proc_key] = proc
     if quotas["ram_limit_mb"] != UNLIMITED:
         start_ram_monitor(proc_key, proc.pid, quotas["ram_limit_mb"], server_dir)
-    return jsonify({"success": True})
+    return jsonify({"success": True, "pty": used_pty})
 
 @app.route("/server/input/<folder>", methods=["POST"])
 def server_input(folder):
@@ -930,8 +1150,19 @@ def server_input(folder):
     special = (data.get("special") or "").strip()
     text = data.get("text", "")
 
-    # إرسال إشارة Ctrl+C (SIGINT) لمجموعة عمليات الخادم فقط
+    # إرسال إشارة Ctrl+C: عبر الطرفية (0x03) مثل الترمينال الحقيقي، أو SIGINT كمكمل
     if special == "ctrl_c":
+        master_fd = pty_masters.get(proc_key)
+        sent_via_tty = False
+        if master_fd is not None:
+            try:
+                os.write(master_fd, b"\x03")
+                append_log(server_dir, "[INPUT] ^C")
+                sent_via_tty = True
+            except OSError:
+                pass
+        if sent_via_tty:
+            return jsonify({"success": True, "message": "تم إرسال إشارة Ctrl+C للخادم"})
         try:
             pgid = os.getpgid(proc.pid)
             os.killpg(pgid, signal.SIGINT)
@@ -940,9 +1171,18 @@ def server_input(folder):
         except (ProcessLookupError, PermissionError, OSError) as e:
             return jsonify({"success": False, "message": f"فشل إرسال الإشارة: {e}"})
 
-    # إرسال نص عادي عبر stdin
+    # إرسال نص عادي: عبر الطرفية (يُصدّى تلقائياً فيظهر في الكونسول) أو عبر الأنبوب
     if not isinstance(text, str) or text == "":
         return jsonify({"success": False, "message": "النص مطلوب"}), 400
+
+    master_fd = pty_masters.get(proc_key)
+    if master_fd is not None:
+        try:
+            os.write(master_fd, (text + "\n").encode("utf-8"))
+            return jsonify({"success": True})
+        except (BrokenPipeError, ValueError, OSError) as e:
+            append_log(server_dir, f"[SYSTEM] Failed to deliver input: {e}")
+            return jsonify({"success": False, "message": "تعذّر تسليم المدخل (الخادم ربما أغلق المدخلات)"}), 400
 
     try:
         if proc.stdin is None or proc.stdin.closed:
@@ -960,10 +1200,21 @@ def set_startup(folder):
     if 'username' not in session:
         return jsonify({"success": False}), 401
     data = request.get_json() or {}
+    file_rel = sanitize_rel_path(data.get('file', ''))
+    if not file_rel:
+        return jsonify({"success": False, "message": "اسم الملف مطلوب"}), 400
+
+    # تحقق أن الملف موجود فعلاً داخل الخادم — لا حديث لعناوين وهمية
+    server_dir = safe_join(get_user_servers_dir(session['username']), folder)
+    target = safe_join(server_dir, file_rel) if server_dir else None
+    if not target or not os.path.isfile(target):
+        return jsonify({"success": False,
+                        "message": f"الملف {file_rel} غير موجود داخل الخادم"}), 404
+
     meta = load_meta(folder)
-    meta["startup_file"] = sanitize_rel_path(data.get('file', ''))
+    meta["startup_file"] = file_rel
     save_meta(folder, meta)
-    return jsonify({"success": True})
+    return jsonify({"success": True, "startup_file": file_rel, "servers": load_servers_list()})
 
 @app.route("/server/rename/<folder>", methods=["POST"])
 def rename_server(folder):
@@ -996,6 +1247,7 @@ def delete_server(folder):
         except Exception:
             pass
         stop_ram_monitor(proc_key)
+        close_pty(proc_key)
         running_procs.pop(proc_key, None)
 
     shutil.rmtree(server_dir, ignore_errors=True)
@@ -1078,7 +1330,7 @@ def list_files(folder):
     entries = []
     try:
         for name in sorted(os.listdir(target_dir)):
-            if name in ["meta.json", "server.log", "node_modules"]:
+            if name in ["meta.json", "server.log", "node_modules"] or name.startswith(".gx-extract"):
                 continue
             f_path = os.path.join(target_dir, name)
             is_dir = os.path.isdir(f_path)
@@ -1099,6 +1351,53 @@ def list_files(folder):
 
     dirs_first = sorted(entries, key=lambda e: (not e["is_dir"], e["name"].lower()))
     return jsonify({"success": True, "files": dirs_first, "path": rel_path})
+
+@app.route("/files/tree/<folder>")
+def files_tree(folder):
+    """شجرة الملفات لمنتقيات الواجهة (تحديد الملف الرئيسي / نقل الملفات)
+
+    ?files=1 يضم الملفات — الافتراضي مجلدات فقط (للنقل)
+    يستثني: node_modules / .git / ملفات النظام الداخلية / مجلدات الفك المؤقتة
+    """
+    if 'username' not in session:
+        return jsonify({"success": False}), 401
+
+    username = session['username']
+    include_files = request.args.get("files", "0") == "1"
+    base_dir = safe_join(get_user_servers_dir(username), folder)
+    if not base_dir or not os.path.isdir(base_dir):
+        return jsonify({"success": False, "message": "غير موجود"}), 404
+
+    SKIP_NAMES = {"meta.json", "server.log", "node_modules", ".git", "__pycache__", ".cache"}
+    MAX_NODES = 600
+
+    def build(rel):
+        nodes = []
+        abs_dir = safe_join(base_dir, rel) if rel else base_dir
+        if not abs_dir or not os.path.isdir(abs_dir):
+            return nodes
+        try:
+            names = sorted(os.listdir(abs_dir), key=str.lower)
+        except OSError:
+            return nodes
+        for name in names:
+            if len(nodes) >= MAX_NODES:
+                nodes.append({"name": "…", "path": "", "is_dir": False, "truncated": True})
+                break
+            if name in SKIP_NAMES or name.startswith(".gx-extract"):
+                continue
+            f_path = os.path.join(abs_dir, name)
+            is_dir = os.path.isdir(f_path)
+            if not is_dir and not include_files:
+                continue
+            node = {"name": name, "path": f"{rel}/{name}" if rel else name,
+                    "is_dir": is_dir, "ext": os.path.splitext(name)[1].lower()}
+            if is_dir:
+                node["children"] = build(node["path"])
+            nodes.append(node)
+        return nodes
+
+    return jsonify({"success": True, "tree": build("")})
 
 @app.route("/files/content/<folder>/<path:filename>")
 def get_file_content(folder, filename):
@@ -1180,18 +1479,17 @@ def upload_file(folder):
         f.save(save_path)
         results.append({"name": safe_name, "size": f"{os.path.getsize(save_path) / 1024:.2f} KB"})
 
-        # فك ضغط تلقائي بعد الرفع للأرشيفات
+        # فك ضغط تلقائي بعد الرفع للأرشيفات — مباشرة في نفس المجلد (بدون مجلد باسم الأرشيف)
         if auto_extract and get_archive_type(safe_name):
             try:
                 ok, msg = check_disk_quota(username, os.path.getsize(save_path) * 3)
                 if not ok:
                     errors.append(f"{safe_name}: {msg}")
                     continue
-                extract_dir = os.path.join(target_dir, os.path.splitext(safe_name)[0])
-                os.makedirs(extract_dir, exist_ok=True)
-                extract_archive(save_path, extract_dir)
+                count, _sub = extract_archive_safely(save_path, target_dir, mode="here")
                 os.remove(save_path)
                 results[-1]["extracted"] = True
+                results[-1]["extracted_items"] = count
             except Exception as e:
                 errors.append(f"{safe_name}: فشل فك الضغط - {str(e)}")
 
@@ -1399,31 +1697,80 @@ def copy_item(folder):
 
 @app.route("/files/move/<folder>", methods=["POST"])
 def move_item(folder):
+    """نقل ملف/مجلد أو عدة عناصر إلى مجلد هدف — يدعم:
+
+    { path: "file.txt", dest: "sub" }            نقل عنصر واحد
+    { items: ["a.txt", "b.txt"], dest: "sub" }   نقل متعدد
+    { ..., overwrite: true }                     استبدال العناصر الموجودة بالهدف
+    """
     if 'username' not in session:
         return jsonify({"success": False}), 401
 
     data = request.get_json() or {}
-    src_rel = sanitize_rel_path(data.get('path', ''))
+    username = session['username']
     dst_dir_rel = sanitize_rel_path(data.get('dest', ''))
-    server_dir = safe_join(get_user_servers_dir(session['username']), folder)
-    src = safe_join(server_dir, src_rel) if server_dir else None
+    overwrite = data.get('overwrite', False) is True
+
+    # جمع العناصر المطلوب نقلها (واحد أو متعدد)
+    raw_items = data.get('items')
+    if isinstance(raw_items, list) and raw_items:
+        src_rels = [sanitize_rel_path(str(p)) for p in raw_items if p]
+    else:
+        src_rels = [sanitize_rel_path(data.get('path', ''))]
+    src_rels = [p for p in src_rels if p]
+    if not src_rels:
+        return jsonify({"success": False, "message": "لم يتم تحديد أي عنصر للنقل"}), 400
+
+    server_dir = safe_join(get_user_servers_dir(username), folder)
     dst_dir = safe_join(server_dir, dst_dir_rel) if server_dir else None
+    if not server_dir or not dst_dir or not os.path.isdir(dst_dir):
+        return jsonify({"success": False, "message": "المجلد الهدف غير موجود"}), 404
 
-    if not src or not os.path.exists(src) or not dst_dir or not os.path.isdir(dst_dir):
-        return jsonify({"success": False, "message": "المسار غير صحيح"}), 404
+    moved, errors, skipped = [], [], []
+    for src_rel in src_rels:
+        src = safe_join(server_dir, src_rel) if server_dir else None
+        if not src or not os.path.exists(src):
+            errors.append(f"{src_rel}: غير موجود")
+            continue
 
-    if os.path.abspath(src) == os.path.abspath(dst_dir) or os.path.abspath(dst_dir).startswith(os.path.abspath(src) + os.sep):
-        return jsonify({"success": False, "message": "لا يمكن نقل مجلد داخل نفسه"})
+        src_abs, dst_abs = os.path.abspath(src), os.path.abspath(dst_dir)
+        # نقل مجلد إلى داخل نفسه ممنوع
+        if src_abs == dst_abs or dst_abs.startswith(src_abs + os.sep):
+            errors.append(f"{src_rel}: لا يمكن نقل مجلد داخل نفسه")
+            continue
 
-    dst = os.path.join(dst_dir, os.path.basename(src))
-    if os.path.exists(dst):
-        return jsonify({"success": False, "message": "يوجد عنصر بنفس الاسم في المجلد الهدف"})
+        # النقل إلى نفس المجلد الحالي لا معنى له
+        if os.path.dirname(src_abs) == dst_abs:
+            skipped.append(src_rel)
+            continue
 
-    try:
-        shutil.move(src, dst)
-        return jsonify({"success": True, "message": "تم النقل بنجاح"})
-    except Exception as e:
-        return jsonify({"success": False, "message": f"فشل النقل: {str(e)}"})
+        dst = os.path.join(dst_dir, os.path.basename(src))
+        try:
+            if os.path.exists(dst):
+                if not overwrite:
+                    errors.append(f"{os.path.basename(src)}: يوجد عنصر بنفس الاسم في المجلد الهدف")
+                    continue
+                if os.path.isdir(dst):
+                    shutil.rmtree(dst)
+                else:
+                    os.remove(dst)
+            shutil.move(src, dst)
+            moved.append(os.path.basename(src))
+        except Exception as e:
+            errors.append(f"{src_rel}: {str(e)}")
+
+    # بناء رسالة واضحة تفصيلية
+    parts = []
+    if moved:
+        parts.append(f"تم نقل {len(moved)} عنصر إلى '{dst_dir_rel or 'الجذر'}'")
+    if skipped:
+        parts.append(f"{len(skipped)} عنصر موجود بالفعل في المجلد الهدف")
+    if errors:
+        parts.append("أخطاء: " + "؛ ".join(errors))
+    message = " | ".join(parts) if parts else "لم يتم نقل أي عنصر"
+
+    return jsonify({"success": len(moved) > 0, "message": message,
+                    "moved": moved, "errors": errors})
 
 @app.route("/files/duplicate/<folder>", methods=["POST"])
 def duplicate_item(folder):
@@ -1460,13 +1807,23 @@ def duplicate_item(folder):
 
 @app.route("/files/extract/<folder>", methods=["POST"])
 def extract_item(folder):
-    """فك ضغط الأرشيفات: ZIP / TAR / GZ / BZ2 / XZ / 7Z / RAR"""
+    """فك ضغط الأرشيفات: ZIP / TAR / GZ / BZ2 / XZ / 7Z / RAR
+
+    mode:
+      - "here" (الافتراضي): الاستخراج مباشرة في مجلد الأرشيف — بدون مجلد باسم الأرشيف
+      - "subfolder"       : الاستخراج داخل مجلد جديد باسم الأرشيف
+    delete_archive: حذف ملف الأرشيف بعد نجاح الفك
+    """
     if 'username' not in session:
         return jsonify({"success": False}), 401
 
     username = session['username']
     data = request.get_json() or {}
     rel_path = sanitize_rel_path(data.get('path', ''))
+    mode = data.get('mode', 'here')
+    delete_archive = data.get('delete_archive', False) is True
+    if mode not in ("here", "subfolder"):
+        mode = "here"
     server_dir = safe_join(get_user_servers_dir(username), folder)
     archive_path = safe_join(server_dir, rel_path) if server_dir else None
 
@@ -1474,7 +1831,7 @@ def extract_item(folder):
         return jsonify({"success": False, "message": "الأرشيف غير موجود"}), 404
 
     if not get_archive_type(os.path.basename(archive_path)):
-        return jsonify({"success": False, "message": "هذا الملف ليس أرشيفاً مدعوماً"})
+        return jsonify({"success": False, "message": "هذا الملف ليس أرشيفاً مدعوماً"}), 400
 
     # حجز مساحة تقديرية 3x حجم الأرشيف للتحقق من الحصة
     archive_size = os.path.getsize(archive_path)
@@ -1482,27 +1839,25 @@ def extract_item(folder):
     if not ok:
         return jsonify({"success": False, "message": msg})
 
-    base_name = os.path.splitext(os.path.basename(archive_path))[0]
-    if base_name.endswith(('.tar', '.tgz')):
-        base_name = os.path.splitext(base_name)[0]
-    extract_dir = os.path.join(os.path.dirname(archive_path), base_name)
-    counter = 1
-    while os.path.exists(extract_dir):
-        extract_dir = os.path.join(os.path.dirname(archive_path), f"{base_name}-{counter}")
-        counter += 1
-
+    dest_dir = os.path.dirname(archive_path) or server_dir
     try:
-        os.makedirs(extract_dir, exist_ok=True)
-        extract_archive(archive_path, extract_dir)
-        extracted_count = sum(len(files) for _, _, files in os.walk(extract_dir))
-        return jsonify({
-            "success": True,
-            "message": f"تم فك ضغط {extracted_count} ملف في مجلد {os.path.basename(extract_dir)}",
-            "extracted_to": os.path.basename(extract_dir)
-        })
+        count, subfolder = extract_archive_safely(archive_path, dest_dir, mode=mode)
     except Exception as e:
-        shutil.rmtree(extract_dir, ignore_errors=True)
         return jsonify({"success": False, "message": f"فشل فك الضغط: {str(e)}"})
+
+    deleted = False
+    if delete_archive:
+        try:
+            os.remove(archive_path)
+            deleted = True
+        except OSError:
+            pass
+
+    if mode == "here":
+        message = f"تم فك الضغط مباشرة في المجلد الحالي ({count} عنصر)" + (" وحُذف الأرشيف" if deleted else "")
+    else:
+        message = f"تم فك ضغط {count} ملف في مجلد {subfolder}" + (" وحُذف الأرشيف" if deleted else "")
+    return jsonify({"success": True, "message": message, "extracted_to": subfolder, "deleted": deleted})
 
 @app.route("/files/archive/<folder>", methods=["POST"])
 def archive_items(folder):
