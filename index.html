@@ -2,8 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#05060a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <title>Gojgui Pro — لوحة الاستضافة</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap');
@@ -274,6 +280,52 @@
     .console-box::-webkit-scrollbar { width: 8px; }
     .console-box::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
     .console-box::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+    /* ====== شريط إدخال الكونسول ====== */
+    .console-wrap { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+    .console-input-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      backdrop-filter: blur(5px);
+      transition: border-color 0.3s;
+    }
+
+    .console-input-bar:focus-within { border-color: var(--accent); }
+    .ci-prompt { color: var(--accent); font-family: 'Courier New', monospace; font-weight: 700; font-size: 15px; }
+
+    #consoleInput {
+      flex: 1; min-width: 0;
+      background: transparent; border: 0; outline: none;
+      color: #e9f2f7;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      direction: ltr; text-align: left;
+    }
+
+    #consoleInput:disabled { opacity: 0.45; }
+
+    .ci-btn {
+      background: var(--gradient); border: 0; color: #fff;
+      padding: 9px 16px; border-radius: 8px;
+      font-weight: 700; cursor: pointer;
+      font-family: 'Tajawal', sans-serif;
+      min-height: 40px; white-space: nowrap; font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .ci-btn:active { transform: scale(0.96); }
+    .ci-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .ci-btn.ctrlc {
+      background: transparent; border: 1px solid var(--error); color: var(--error);
+      font-family: 'Courier New', monospace; font-size: 12px; padding: 9px 12px;
+    }
+
+    .ci-btn.ctrlc:disabled { border-color: rgba(255, 85, 85, 0.3); }
 
     .btn-act {
       width: 100%; padding: 13px;
@@ -590,16 +642,50 @@
     .toast.show { display: block; }
 
     /* ====== موبايل ====== */
+    .mobile-nav { display: none; }
+
     @media (max-width: 768px) {
       .mgr-grid { grid-template-columns: 1fr; }
-      .console-box { height: 380px; }
+      .console-box { height: min(420px, 55vh); }
       #cardsContainer { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
       .card { padding: 24px 12px; }
       .card-menu { opacity: 1; }
+
+      /* شريط التنقل السفلي للموبايل */
+      .mobile-nav {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+        background: rgba(5, 6, 10, 0.94);
+        backdrop-filter: blur(15px);
+        border-top: 1px solid var(--panel-border);
+        z-index: 1500;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+        justify-content: space-around;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.45);
+      }
+
+      .mobile-nav button {
+        background: none; border: 0; color: var(--muted);
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        font-family: 'Tajawal', sans-serif; font-size: 10.5px; font-weight: 700;
+        padding: 7px 12px; border-radius: 12px; cursor: pointer;
+        min-width: 72px; min-height: 50px;
+        transition: all 0.25s;
+      }
+
+      .mobile-nav button .ic { font-size: 21px; line-height: 1; }
+      .mobile-nav button.active { color: var(--accent); background: rgba(0, 212, 255, 0.1); }
+
+      body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+
+      /* كروت الإحصائيات عمودين + أزرار التحكم في صف واحد */
+      .stats-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+      .action-row .btn-act { margin-bottom: 0; padding: 12px 4px; font-size: 12px; }
+      .stat-card { margin-bottom: 0; }
     }
 
     @media (max-width: 600px) {
-      body { padding-bottom: 30px; font-size: 14px; }
+      body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); font-size: 14px; }
 
       .topbar { padding: 10px 12px; }
       .panel-logo { font-size: 15px; }
@@ -634,11 +720,11 @@
       .files-table tr:hover td { background: transparent; }
       .files-table td { border: none; padding: 8px 10px; }
       .files-table td.td-actions {
-        display: flex; flex-wrap: wrap; gap: 6px;
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
         border-top: 1px solid var(--panel-border);
       }
       .files-table td.td-size, .files-table td.td-mod { display: inline-block; width: 50%; color: var(--muted); font-size: 11px; }
-      .f-btn { flex: 1; min-height: 38px; }
+      .f-btn { min-height: 44px; font-size: 12.5px; margin: 0; border-radius: 8px; }
 
       .selection-bar { padding: 10px; }
       .selection-bar .fm-actions { width: 100%; }
@@ -647,7 +733,32 @@
       .modal { padding: 18px 14px; }
       .lang-options { grid-template-columns: 1fr 1fr; gap: 8px; }
 
-      .toast { bottom: 140px; }
+      .toast { bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+
+      /* المودالات تفتح كـ Bottom-Sheet من أسفل الشاشة */
+      .modal-backdrop { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: 100%; width: 100%;
+        border-radius: 18px 18px 0 0;
+        padding: 22px 18px calc(24px + env(safe-area-inset-bottom, 0px));
+        max-height: 88vh;
+        animation: sheetUp 0.32s ease-out;
+      }
+
+      /* منع الزوم التلقائي في iOS: حجم الخط 16px للحقول */
+      .modal input, .modal select, .modal textarea, #consoleInput { font-size: 16px !important; }
+
+      .console-box { height: min(300px, 42vh); font-size: 12px; padding: 12px; }
+      .ci-btn { min-height: 44px; padding: 10px 14px; }
+      .ci-btn.ctrlc { min-height: 44px; }
+      .stat-card { padding: 12px 10px; flex-direction: column; text-align: center; gap: 4px; }
+      .stat-card small { font-size: 10px; }
+      .stat-card b { font-size: 13px; word-break: break-all; }
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(45px); opacity: 0.4; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
@@ -692,14 +803,27 @@
 
     <!-- الكونسول -->
     <div id="viewConsole" class="mgr-grid">
-      <div class="console-box" id="logOut">
-        <div class="loading-dots"><span></span><span></span><span></span></div>
-        جاري التهيئة...
+      <div class="console-wrap">
+        <div class="console-box" id="logOut">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          جاري التهيئة...
+        </div>
+        <!-- شريط إدخال الكونسول: أرسل نصوصاً/أوامراً للخادم (للأدوات التي تطلب مدخلات) -->
+        <div class="console-input-bar">
+          <span class="ci-prompt">›</span>
+          <input id="consoleInput" type="text" placeholder="شغّل الخادم أولاً لتفعيل المدخلات..."
+                 autocomplete="off" autocapitalize="off" autocorrect="off"
+                 spellcheck="false" enterkeyhint="send" disabled>
+          <button class="ci-btn ctrlc" id="btnCtrlC" onclick="sendConsoleInput(true)" disabled title="إرسال إشارة إيقاف Ctrl+C">^C</button>
+          <button class="ci-btn" id="btnSendInput" onclick="sendConsoleInput(false)" disabled>📤 إرسال</button>
+        </div>
       </div>
-      <div>
-        <button id="btnStart" class="btn-act" style="background:var(--gradient)" onclick="srvAction('start')">▶ تشغيل</button>
-        <button id="btnRestart" class="btn-act btn-dark" onclick="srvAction('restart')">🔄 إعادة تشغيل</button>
-        <button class="btn-act" style="background:var(--error)" onclick="srvAction('stop')">⏹ إيقاف</button>
+      <div class="stats-col">
+        <div class="action-row">
+          <button id="btnStart" class="btn-act" style="background:var(--gradient)" onclick="srvAction('start')">▶ تشغيل</button>
+          <button id="btnRestart" class="btn-act btn-dark" onclick="srvAction('restart')">🔄 إعادة</button>
+          <button class="btn-act" style="background:var(--error)" onclick="srvAction('stop')">⏹ إيقاف</button>
+        </div>
 
         <div class="stat-card">
           <div style="font-size:20px">⚡</div>
@@ -811,6 +935,13 @@
     </div>
   </div>
 
+  <!-- ====== شريط التنقل السفلي للموبايل ====== -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button id="mnHome" onclick="goHome()"><span class="ic">🏠</span><span>الرئيسية</span></button>
+    <button id="mnConsole" onclick="mobileSwitch('console')"><span class="ic">🖥️</span><span>الكونسول</span></button>
+    <button id="mnFiles" onclick="mobileSwitch('files')"><span class="ic">📁</span><span>الملفات</span></button>
+  </nav>
+
   <!-- مودال عام -->
   <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
@@ -873,6 +1004,8 @@
     let selectedFiles = new Set();
     let newServerLang = "python";
     let nodeAvailable = true;
+    let inputHistory = [];       // سجل أوامر الكونسول
+    let histIdx = -1;
 
     /* ====== الخلفية ====== */
     function createAnimatedBackground() {
@@ -1026,6 +1159,7 @@
       clearInterval(poll);
       loadServers();
       loadUsage();
+      updateMobileNav();
     }
 
     function switchTab(t) {
@@ -1035,6 +1169,28 @@
       document.getElementById('tabF').classList.toggle('btn-dark', t !== 'files');
       if (t === 'console') { startPolling(); }
       else { clearInterval(poll); loadFiles(); }
+      updateMobileNav();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ====== شريط التنقل السفلي (موبايل) ====== */
+    function updateMobileNav() {
+      const home = document.getElementById('homeView').style.display !== 'none';
+      const mnHome = document.getElementById('mnHome');
+      const mnC = document.getElementById('mnConsole');
+      const mnF = document.getElementById('mnFiles');
+      mnHome.classList.toggle('active', home);
+      const serverOpen = !home;
+      mnC.classList.toggle('active', serverOpen && document.getElementById('viewConsole').style.display !== 'none');
+      mnF.classList.toggle('active', serverOpen && document.getElementById('viewFiles').style.display !== 'none');
+    }
+
+    function mobileSwitch(t) {
+      if (document.getElementById('serverView').style.display === 'none') {
+        showToast('📱 افتح خادماً أولاً من الرئيسية');
+        return;
+      }
+      switchTab(t);
     }
 
     /* ====== الكونسول ====== */
@@ -1067,6 +1223,19 @@
             btnStart.style.background = 'var(--gradient)';
             statusTxt.className = 'status-offline';
           }
+
+          // تفعيل/تعطيل شريط إدخال الكونسول حسب حالة الخادم
+          const cIn = document.getElementById('consoleInput');
+          const cSend = document.getElementById('btnSendInput');
+          const cCtrl = document.getElementById('btnCtrlC');
+          const canType = isRunning && d.interactive !== false;
+          cIn.disabled = !canType;
+          cSend.disabled = !canType;
+          cCtrl.disabled = !isRunning;
+          cIn.placeholder = canType
+            ? "اكتب نصاً أو أمراً وأرسله للخادم (Enter للإرسال)…"
+            : (isRunning ? "الخادم لا يستقبل مدخلات حالياً" : "شغّل الخادم أولاً لتفعيل المدخلات...");
+
           const lo = document.getElementById('logOut');
           lo.scrollTop = lo.scrollHeight;
         } catch (e) { console.error('Polling error:', e); }
@@ -1074,6 +1243,76 @@
       fn();
       poll = setInterval(fn, 2000);
     }
+
+    /* ====== إدخال الكونسول (stdin) ====== */
+    async function sendConsoleInput(ctrlC = false) {
+      if (!currentSrv) return;
+
+      if (ctrlC) {
+        try {
+          const r = await api(`/server/input/${currentSrv.folder}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ special: 'ctrl_c' })
+          });
+          const d = await r.json();
+          if (!d.success) showToast('❌ ' + d.message, true);
+        } catch (e) { showToast('❌ فشل إرسال الإشارة', true); }
+        return;
+      }
+
+      const inp = document.getElementById('consoleInput');
+      const text = inp.value;
+      if (!text.trim()) return;
+      if (!isRunning) { showToast('⚠️ شغّل الخادم أولاً ثم أرسل المدخلات', true); return; }
+
+      // سجل الأوامر (مثل الترمينال الحقيقي)
+      inputHistory.push(text);
+      if (inputHistory.length > 100) inputHistory.shift();
+      histIdx = inputHistory.length;
+      inp.value = '';
+
+      try {
+        const r = await api(`/server/input/${currentSrv.folder}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const d = await r.json();
+        if (!d.success) showToast('❌ ' + d.message, true);
+      } catch (e) {
+        showToast('❌ فشل إرسال المدخل', true);
+      }
+    }
+
+    // لوحة المفاتيح على حقل الإدخال: Enter للإرسال + أسهم لسجل الأوامر
+    document.addEventListener('DOMContentLoaded', function () {
+      const cIn = document.getElementById('consoleInput');
+      if (cIn) {
+        cIn.addEventListener('keydown', function (e) {
+          e.stopPropagation();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendConsoleInput(false);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (inputHistory.length && histIdx > 0) {
+              histIdx--;
+              cIn.value = inputHistory[histIdx];
+            }
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (histIdx < inputHistory.length - 1) {
+              histIdx++;
+              cIn.value = inputHistory[histIdx];
+            } else {
+              histIdx = inputHistory.length;
+              cIn.value = '';
+            }
+          }
+        });
+      }
+    });
 
     async function srvAction(act) {
       if (act === 'start' && isRunning) return;

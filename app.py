@@ -13,6 +13,7 @@ import subprocess
 import psutil
 import socket
 import sys
+import signal
 import hashlib
 import secrets
 import time
@@ -29,22 +30,26 @@ except ImportError:
     py7zr = None
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-USERS_DIR = os.path.join(BASE_DIR, "USERS")
+
+# دليل البيانات: على Railway صل ب Volume وحدد DATA_DIR=/data حتى لا تُفقد الحسابات عند إعادة النشر
+DATA_DIR = os.path.abspath(os.environ.get("DATA_DIR") or BASE_DIR)
+USERS_DIR = os.path.join(DATA_DIR, "USERS")
 os.makedirs(USERS_DIR, exist_ok=True)
 
 app = Flask(__name__, static_folder=BASE_DIR)
-app.secret_key = secrets.token_hex(32)
+# SECRET_KEY ثابت من البيئة = بقاء الجلسات بعد إعادة التشغيل (مهم على Railway)
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024  # حد الرفع 512MB
 
 running_procs = {}          # proc_key -> Popen
 ram_monitors = {}           # proc_key -> Thread
-USERS_FILE = os.path.join(BASE_DIR, "users.json")
-REMEMBER_TOKENS_FILE = os.path.join(BASE_DIR, "remember_tokens.json")
+USERS_FILE = os.path.join(DATA_DIR, "users.json")
+REMEMBER_TOKENS_FILE = os.path.join(DATA_DIR, "remember_tokens.json")
 
-# الحساب الرئيسي (المسؤول)
-ADMIN_USERNAME = "Ziad555"
-ADMIN_PASSWORD = "Ziad555"
+# الحساب الرئيسي (المسؤول) — يمكن تغييره من متغيرات البيئة على Railway
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "Ziad555")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Ziad555")
 
 # الحدود الافتراضية للمستخدمين الجدد
 DEFAULT_RAM_LIMIT_MB = 512        # رام
@@ -622,9 +627,11 @@ def api_login():
         if remember_me:
             token = create_remember_token(username)
             response = make_response(jsonify(response_data))
+            # secure ديناميكي: خلف Railway (HTTPS) يجب أن تكون الكوكي آمنة
+            is_https = request.is_secure or request.headers.get("X-Forwarded-Proto", "") == "https"
             response.set_cookie('remember_token', token,
                                 max_age=30 * 24 * 60 * 60, httponly=True,
-                                secure=False, samesite='Strict')
+                                secure=is_https, samesite='Strict')
             return response
         return jsonify(response_data)
 
@@ -704,6 +711,16 @@ def user_settings():
 @app.route("/api/system/runtimes")
 def api_runtimes():
     return jsonify({"success": True, "runtimes": get_runtimes()})
+
+@app.route("/manifest.json")
+def pwa_manifest():
+    """بيانات تطبيق PWA (تثبيت اللوحة على الهاتف)"""
+    return send_from_directory(BASE_DIR, "manifest.json", mimetype="application/manifest+json")
+
+@app.route("/icons/<path:icon_name>")
+def pwa_icons(icon_name):
+    """أيقونات PWA"""
+    return send_from_directory(os.path.join(BASE_DIR, "icons"), icon_name)
 
 # ============== Protected Routes (Servers) ==============
 
@@ -803,6 +820,9 @@ def get_stats(folder):
         except Exception:
             pass
 
+    # هل يستقبل الخادم مدخلات من الكونسول؟
+    interactive = bool(proc and proc.stdin is not None and not proc.stdin.closed)
+
     return jsonify({
         "status": "Running" if running else "Offline",
         "cpu": cpu,
@@ -812,7 +832,8 @@ def get_stats(folder):
         "language": meta.get("language", "python"),
         "startup_file": meta.get("startup_file", ""),
         "ram_limit_mb": quotas["ram_limit_mb"],
-        "disk_used_mb": disk_used
+        "disk_used_mb": disk_used,
+        "interactive": interactive
     })
 
 @app.route("/server/action/<folder>/<act>", methods=["POST"])
@@ -863,10 +884,18 @@ def server_action(folder, act):
 
     quotas = get_user_quotas(username)
     append_log(server_dir, f"[SYSTEM] Starting {language} app: {startup} (RAM limit: {quotas['ram_limit_mb']} MB)")
+    append_log(server_dir, "[SYSTEM] Console input enabled - you can send text/commands from the panel.")
 
     log_file = open(log_path, "a")
+    # stdin=PIPE: يسمح بإرسال نص/أوامر للخادم من الكونسول
+    # start_new_session: مجموعة عمليات مستقلة حتى لا تؤثر إشارة Ctrl+C على لوحة التحكم نفسها
+    child_env = dict(os.environ)
+    child_env.setdefault("PYTHONUNBUFFERED", "1")
+    child_env.setdefault("FORCE_COLOR", "0")
     try:
-        proc = subprocess.Popen(cmd, cwd=server_dir, stdout=log_file, stderr=log_file)
+        proc = subprocess.Popen(cmd, cwd=server_dir, stdout=log_file, stderr=log_file,
+                                stdin=subprocess.PIPE, universal_newlines=True,
+                                start_new_session=True, env=child_env)
     except Exception as e:
         append_log(server_dir, f"[ERROR] Failed to start: {e}")
         return jsonify({"success": False, "message": f"فشل التشغيل: {e}"})
@@ -875,6 +904,56 @@ def server_action(folder, act):
     if quotas["ram_limit_mb"] != UNLIMITED:
         start_ram_monitor(proc_key, proc.pid, quotas["ram_limit_mb"], server_dir)
     return jsonify({"success": True})
+
+@app.route("/server/input/<folder>", methods=["POST"])
+def server_input(folder):
+    """إرسال نص/أوامر إلى الخادم عبر stdin - للأدوات التي تطلب مدخلات"""
+    if 'username' not in session:
+        return jsonify({"success": False, "message": "غير مصرح"}), 401
+
+    username = session['username']
+    proc_key = proc_key_of(username, folder)
+    server_dir = safe_join(get_user_servers_dir(username), folder)
+    if not server_dir or not os.path.isdir(server_dir):
+        return jsonify({"success": False, "message": "غير موجود"}), 404
+
+    proc = running_procs.get(proc_key)
+    if not proc or not psutil.pid_exists(proc.pid):
+        return jsonify({"success": False, "message": "الخادم غير يعمل - شغّله أولاً"}), 400
+    try:
+        if psutil.Process(proc.pid).status() == psutil.STATUS_ZOMBIE:
+            return jsonify({"success": False, "message": "الخادم غير يعمل"}), 400
+    except psutil.NoSuchProcess:
+        return jsonify({"success": False, "message": "الخادم غير يعمل"}), 400
+
+    data = request.get_json() or {}
+    special = (data.get("special") or "").strip()
+    text = data.get("text", "")
+
+    # إرسال إشارة Ctrl+C (SIGINT) لمجموعة عمليات الخادم فقط
+    if special == "ctrl_c":
+        try:
+            pgid = os.getpgid(proc.pid)
+            os.killpg(pgid, signal.SIGINT)
+            append_log(server_dir, "[INPUT] ^C")
+            return jsonify({"success": True, "message": "تم إرسال إشارة Ctrl+C للخادم"})
+        except (ProcessLookupError, PermissionError, OSError) as e:
+            return jsonify({"success": False, "message": f"فشل إرسال الإشارة: {e}"})
+
+    # إرسال نص عادي عبر stdin
+    if not isinstance(text, str) or text == "":
+        return jsonify({"success": False, "message": "النص مطلوب"}), 400
+
+    try:
+        if proc.stdin is None or proc.stdin.closed:
+            return jsonify({"success": False, "message": "الخادم لا يستقبل مدخلات"}), 400
+        proc.stdin.write(text + "\n")
+        proc.stdin.flush()
+        append_log(server_dir, f"[INPUT] {text}")
+        return jsonify({"success": True})
+    except (BrokenPipeError, ValueError, OSError) as e:
+        append_log(server_dir, f"[SYSTEM] Failed to deliver input: {e}")
+        return jsonify({"success": False, "message": "تعذّر تسليم المدخل (الخادم ربما أغلق المدخلات)"}), 400
 
 @app.route("/server/set-startup/<folder>", methods=["POST"])
 def set_startup(folder):
@@ -1747,5 +1826,6 @@ def admin_my_quotas():
     return jsonify({"success": False, "message": "لا توجد تغييرات"})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("SERVER_PORT", 21910))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # Railway يوفر PORT تلقائياً — نقرأه أولاً ثم SERVER_PORT للتوافق الخلفي
+    port = int(os.environ.get("PORT") or os.environ.get("SERVER_PORT") or 8080)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)

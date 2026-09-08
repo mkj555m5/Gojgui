@@ -1,0 +1,18 @@
+# لا تُدمج في صورة Docker
+.git
+.gitignore
+.github
+__pycache__/
+*.pyc
+*.pyo
+USERS/
+users.json
+remember_tokens.json
+tmp_dl/
+node_modules/
+*.log
+screenshots/
+vercel.json
+railway.json
+.dockerignore
+Dockerfile

@@ -2,8 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="theme-color" content="#05060a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <title>لوحة المسؤول - Gojgui Pro</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
@@ -478,7 +484,7 @@
     }
 
     @media (max-width: 600px) {
-      body { padding-bottom: 20px; font-size: 14px; }
+      body { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); font-size: 14px; }
 
       .topbar {
         flex-direction: column; gap: 10px; padding: 12px;
@@ -491,9 +497,19 @@
       .admin-badge { display: none; }
       .user-info { width: 100%; justify-content: space-between; font-size: 13px; }
 
-      .tabs-bar { position: fixed; bottom: 0; left: 0; right: 0; border-radius: 18px 18px 0 0; padding: 8px; z-index: 1500; background: rgba(5, 6, 10, 0.97); border-top: 1px solid rgba(255, 215, 0, 0.3); backdrop-filter: blur(15px); }
-      .tab-btn { flex: 1; min-width: 0; padding: 12px 4px; font-size: 11px; flex-direction: column; gap: 4px; }
-      .tab-btn .tab-icon { font-size: 18px; }
+      .tabs-bar {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        top: auto;
+        border-radius: 18px 18px 0 0;
+        padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+        z-index: 1500; background: rgba(5, 6, 10, 0.97);
+        border-top: 1px solid rgba(255, 215, 0, 0.3);
+        backdrop-filter: blur(15px);
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+        flex-wrap: nowrap;
+      }
+      .tab-btn { flex: 1; min-width: 0; padding: 10px 2px; font-size: 10.5px; flex-direction: column; gap: 4px; min-height: 54px; }
+      .tab-btn .tab-icon { font-size: 19px; }
 
       .container { margin: 14px auto; padding: 0 12px; }
       .card { padding: 18px 14px; border-radius: 16px; }
@@ -504,12 +520,32 @@
       .user-item { padding: 14px 10px; }
       .user-head { flex-direction: column; align-items: flex-start; }
       .user-actions { width: 100%; }
-      .user-actions .action-btn { flex: 1; }
+      .user-actions .action-btn { flex: 1; min-height: 42px; }
       .stat-number { font-size: 1.4rem; }
       .server-item { flex-direction: column; align-items: flex-start; }
       .user-actions { gap: 6px; }
       .btn { font-size: 0.95rem; padding: 12px; }
       .presets { justify-content: center; }
+
+      /* المودال يفتح كـ Bottom-Sheet من أسفل الشاشة */
+      .modal-backdrop { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: 100%; border-radius: 18px 18px 0 0;
+        padding: 22px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        max-height: 88vh;
+        animation: sheetUp 0.32s ease-out;
+      }
+
+      /* منع الزوم التلقائي في iOS: 16px للحقول الصغيرة */
+      .search-box input, .modal input, .modal select { font-size: 16px !important; }
+
+      /* سلايدرز أسهل للمس */
+      .form-group input[type="range"] { min-height: 44px; }
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(45px); opacity: 0.4; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
