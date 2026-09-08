@@ -1,11 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>aMiNe KiNg HoSt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#05060a" />
+  <title>Gojgui Pro — لوحة الاستضافة</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap');
+
     :root {
       --bg: #05060a;
       --muted: #99a3ad;
@@ -17,16 +19,13 @@
       --gradient: linear-gradient(135deg, #00d4ff 0%, #0088ff 50%, #0066cc 100%);
       --success: #00ff88;
       --error: #ff5555;
+      --gold: #FFD700;
     }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Tajawal', 'Inter', sans-serif;
       background: var(--bg);
       color: #e9f2f7;
       padding-bottom: 40px;
@@ -34,751 +33,854 @@
       overflow-x: hidden;
       position: relative;
     }
-    
-    /* خلفية متحركة */
+
     .animated-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-      pointer-events: none;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; overflow: hidden; pointer-events: none;
     }
-    
+
     .animated-line {
       position: absolute;
       background: linear-gradient(90deg, transparent, var(--accent), transparent);
       animation: moveLine 20s linear infinite;
       opacity: 0.05;
     }
-    
+
     @keyframes moveLine {
-      0% {
-        transform: translateX(-100px);
-      }
-      100% {
-        transform: translateX(calc(100vw + 100px));
-      }
+      0% { transform: translateX(-100px); }
+      100% { transform: translateX(calc(100vw + 100px)); }
     }
-    
+
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.7;
-        transform: scale(1.05);
-      }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
     }
-    
-    @keyframes glow {
-      0%, 100% {
-        box-shadow: 0 0 10px var(--accent),
-                    0 0 20px var(--accent-light);
-      }
-      50% {
-        box-shadow: 0 0 20px var(--accent),
-                    0 0 40px var(--accent-light);
-      }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    
-    /* Topbar styling */
+
+    /* ====== التوب بار ====== */
     .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px;
       border-bottom: 1px solid var(--panel-border);
-      position: sticky;
-      top: 0;
-      background: rgba(0, 0, 0, 0.8);
+      position: sticky; top: 0;
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(10px);
       z-index: 1000;
       animation: slideIn 0.5s ease-out;
+      gap: 10px; flex-wrap: wrap;
     }
-    
+
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+
     .panel-logo {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 18px; font-weight: 800;
       background: var(--gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; letter-spacing: 1px; text-transform: uppercase;
+      white-space: nowrap;
     }
-    
+
+    .quota-widget {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(0, 212, 255, 0.06);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px; padding: 6px 12px;
+      font-size: 12px; color: var(--muted);
+    }
+
+    .quota-widget .bar {
+      width: 90px; height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px; overflow: hidden;
+    }
+
+    .quota-widget .fill {
+      height: 100%; background: var(--gradient);
+      border-radius: 3px; transition: width 0.6s;
+    }
+
+    .quota-widget .fill.danger { background: var(--error); }
+
     .new-btn {
       background: var(--gradient);
-      color: #00121a;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: 0;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
+      color: #00121a; padding: 9px 16px;
+      border-radius: 8px; border: 0;
+      font-weight: 800; cursor: pointer; font-size: 13px;
+      transition: all 0.3s; font-family: 'Tajawal', sans-serif;
+      white-space: nowrap; min-height: 40px;
     }
-    
-    .new-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4);
+
+    .new-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4); }
+    .new-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-dark {
+      background: rgba(34, 34, 34, 0.85); color: white;
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
-    
-    .new-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    }
-    
-    .new-btn:hover::before {
-      left: 100%;
-    }
-    
+
     .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 13px;
     }
-    
+
     .logout-btn {
-      background: transparent;
-      border: 1px solid var(--error);
-      color: var(--error);
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s;
+      background: transparent; border: 1px solid var(--error);
+      color: var(--error); padding: 7px 12px;
+      border-radius: 6px; cursor: pointer; font-size: 12px;
+      transition: all 0.3s; font-family: 'Tajawal', sans-serif;
+      min-height: 36px;
     }
-    
-    .logout-btn:hover {
-      background: rgba(255, 85, 85, 0.1);
-    }
-    
+
+    .logout-btn:hover { background: rgba(255, 85, 85, 0.1); }
+
     .container {
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 0 20px;
+      max-width: 1200px; margin: 24px auto;
+      padding: 0 18px;
       animation: slideIn 0.7s ease-out;
     }
-    
+
+    /* ====== كروت الخوادم ====== */
     #cardsContainer {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
+      gap: 20px; margin-top: 20px;
     }
-    
+
     .card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 36px 18px;
       background: var(--card);
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid var(--panel-border);
-      cursor: pointer;
-      text-align: center;
+      cursor: pointer; text-align: center;
       transition: all 0.3s;
       backdrop-filter: blur(5px);
       animation: slideIn 0.5s ease-out;
-      opacity: 0;
-      animation-fill-mode: forwards;
-      position: relative;
-      overflow: hidden;
+      opacity: 0; animation-fill-mode: forwards;
+      position: relative; overflow: hidden;
     }
-    
+
     .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--gradient);
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: var(--gradient);
     }
-    
+
     .card:hover {
-      transform: translateY(-10px) scale(1.02);
+      transform: translateY(-8px) scale(1.02);
       border-color: var(--accent);
       box-shadow: 0 15px 30px rgba(0, 212, 255, 0.2);
     }
-    
+
     .srv-icon {
-      width: 32px;
-      height: 22px;
-      background: var(--accent);
-      border-radius: 4px;
-      position: relative;
-      margin-bottom: 20px;
+      width: 32px; height: 22px; background: var(--accent);
+      border-radius: 4px; position: relative;
+      margin-bottom: 18px;
       box-shadow: 0 8px 0 0 var(--accent);
       animation: pulse 2s infinite;
     }
-    
+
     .srv-icon::after {
-      content: "";
-      position: absolute;
-      top: 4px;
-      left: 22px;
-      width: 4px;
-      height: 4px;
-      background: #000;
-      border-radius: 50%;
-      box-shadow: 0 8px 0 0 #000;
+      content: ""; position: absolute; top: 4px; left: 22px;
+      width: 4px; height: 4px; background: #000;
+      border-radius: 50%; box-shadow: 0 8px 0 0 #000;
     }
-    
+
     .card-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      color: #fff;
+      font-size: 17px; font-weight: 800;
+      margin-bottom: 6px; text-transform: uppercase;
       background: linear-gradient(90deg, #fff, var(--accent-light));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; word-break: break-all;
     }
-    
-    .card-sub {
-      color: var(--muted);
-      font-size: 12px;
+
+    .card-sub { color: var(--muted); font-size: 12px; }
+
+    .card-badges {
+      display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center;
     }
-    
-    /* Server View Styling */
+
+    .chip {
+      font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 10px;
+    }
+
+    .chip-python { background: rgba(53, 208, 127, 0.15); color: #35d07f; border: 1px solid #35d07f55; }
+    .chip-nodejs { background: rgba(135, 214, 63, 0.12); color: #87d63f; border: 1px solid #87d63f55; }
+    .chip-run { background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid #00ff8855; }
+    .chip-off { background: rgba(153, 163, 173, 0.1); color: var(--muted); border: 1px solid #99a3ad55; }
+    .chip-main { background: rgba(0, 212, 255, 0.08); color: var(--accent); border: 1px solid rgba(0, 212, 255, 0.3); }
+
+    .card-menu {
+      position: absolute; top: 8px; left: 8px;
+      display: flex; gap: 6px; opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:hover .card-menu { opacity: 1; }
+
+    .mini-btn {
+      background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff; width: 30px; height: 30px;
+      border-radius: 8px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: all 0.2s;
+    }
+
+    .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .mini-btn.danger:hover { border-color: var(--error); color: var(--error); }
+
+    /* ====== عرض الخادم ====== */
+    .srv-header-bar {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 18px;
+      flex-wrap: wrap; gap: 10px;
+    }
+
+    #srvHeader { margin: 0; color: var(--accent); font-size: 22px; word-break: break-all; }
+
+    .tab-switch { display: flex; gap: 8px; }
+
     .mgr-grid {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 20px;
-      margin-top: 20px;
+      display: grid; grid-template-columns: 1fr 320px;
+      gap: 20px; margin-top: 20px;
       animation: slideIn 0.6s ease-out;
     }
-    
+
     .console-box {
       background: rgba(0, 0, 0, 0.8);
-      padding: 20px;
-      height: 550px;
+      padding: 18px; height: 520px;
       overflow-y: auto;
       font-family: 'Courier New', monospace;
       border-radius: 10px;
       border: 1px solid var(--panel-border);
-      font-size: 13px;
+      font-size: 12.5px;
       white-space: pre-wrap;
       color: #adbac7;
       backdrop-filter: blur(5px);
+      word-break: break-all;
     }
-    
-    .console-box::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .console-box::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
-    }
-    
-    .console-box::-webkit-scrollbar-thumb {
-      background: var(--accent);
-      border-radius: 4px;
-    }
-    
+
+    .console-box::-webkit-scrollbar { width: 8px; }
+    .console-box::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
+    .console-box::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
     .btn-act {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 10px;
-      border: 0;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      color: white;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-      font-size: 14px;
+      width: 100%; padding: 13px;
+      margin-bottom: 10px; border: 0;
+      border-radius: 8px; font-weight: 700;
+      cursor: pointer; color: white;
+      transition: all 0.3s; font-size: 14px;
+      font-family: 'Tajawal', sans-serif;
+      min-height: 46px;
     }
-    
-    .btn-act::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: 0.5s;
-    }
-    
-    .btn-act:hover::after {
-      left: 100%;
-    }
-    
+
     .btn-act.running {
-      background: white !important;
-      color: black !important;
-      opacity: 0.5;
-      cursor: not-allowed;
+      background: white !important; color: black !important;
+      opacity: 0.5; cursor: not-allowed;
     }
-    
-    .btn-act.running:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
+
     .stat-card {
       background: rgba(255, 255, 255, 0.02);
-      padding: 15px;
-      border-radius: 10px;
+      padding: 14px; border-radius: 10px;
       margin-bottom: 10px;
       border: 1px solid var(--panel-border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.3s;
-      backdrop-filter: blur(5px);
+      display: flex; align-items: center; gap: 12px;
+      transition: all 0.3s; backdrop-filter: blur(5px);
     }
-    
-    .stat-card:hover {
-      transform: translateX(5px);
-      border-color: var(--accent);
+
+    .stat-card:hover { transform: translateX(-5px); border-color: var(--accent); }
+
+    .stat-card small { color: var(--muted); font-size: 11px; }
+
+    .status-running { color: var(--success); animation: pulse 2s infinite; }
+    .status-offline { color: var(--error); }
+
+    .loading-dots { display: inline-flex; gap: 4px; }
+    .loading-dots span {
+      width: 6px; height: 6px; background: var(--accent);
+      border-radius: 50%; animation: pulse 1.5s infinite;
     }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      animation: slideIn 0.7s ease-out;
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ====== مدير الملفات ====== */
+    .fm-toolbar {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 14px;
+      flex-wrap: wrap; gap: 10px;
     }
-    
-    th {
+
+    .fm-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0, 212, 255, 0.04);
+      border: 1px solid var(--panel-border);
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 13px; color: var(--muted);
+      margin-bottom: 14px; flex-wrap: wrap;
+      overflow: hidden;
+    }
+
+    .crumb {
+      cursor: pointer; color: var(--accent);
+      transition: all 0.2s; white-space: nowrap;
+    }
+
+    .crumb:hover { text-decoration: underline; }
+    .crumb-sep { opacity: 0.4; }
+    .crumb-here { color: #fff; font-weight: 700; }
+
+    .upload-area {
+      border: 2px dashed var(--accent);
+      border-radius: 12px; padding: 32px 20px;
+      text-align: center; margin: 16px 0;
+      cursor: pointer; transition: all 0.3s;
+      background: rgba(0, 212, 255, 0.04);
+      position: relative;
+    }
+
+    .upload-area:hover, .upload-area.dragover {
       background: rgba(0, 212, 255, 0.1);
-      padding: 12px 10px;
-      text-align: left;
-      color: var(--accent);
-      font-weight: 600;
+      border-color: var(--accent-light);
+      transform: scale(1.01);
+    }
+
+    .upload-icon { font-size: 42px; margin-bottom: 12px; }
+    .upload-text { color: var(--muted); margin-bottom: 8px; font-size: 15px; }
+    .upload-hint { font-size: 12px; color: var(--muted); opacity: 0.7; }
+
+    .file-input {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0; cursor: pointer;
+    }
+
+    .auto-extract-toggle {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: 12px;
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; user-select: none;
+    }
+
+    .auto-extract-toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+    .upload-progress { display: none; margin-top: 14px; }
+
+    .progress-bar {
+      width: 100%; height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px; overflow: hidden; margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%; background: var(--gradient);
+      width: 0%; transition: width 0.3s;
+    }
+
+    .upload-status { margin-top: 8px; font-size: 13px; color: var(--accent); }
+
+    /* جدول الملفات */
+    .files-table {
+      width: 100%; border-collapse: collapse;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .files-table th {
+      background: rgba(0, 212, 255, 0.08);
+      padding: 12px 10px; text-align: right;
+      color: var(--accent); font-weight: 700;
       border-bottom: 2px solid var(--accent);
+      font-size: 13px;
     }
-    
-    td {
-      padding: 15px 10px;
+
+    .files-table td {
+      padding: 12px 10px;
       border-bottom: 1px solid var(--panel-border);
-      transition: all 0.3s;
+      transition: all 0.3s; font-size: 13px;
+      vertical-align: middle;
     }
-    
-    tr:hover td {
-      background: rgba(0, 212, 255, 0.05);
+
+    .files-table tr:hover td { background: rgba(0, 212, 255, 0.05); }
+
+    .fname {
+      color: #fff; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; word-break: break-all;
     }
-    
+
+    .fname.dir { color: var(--accent-light); }
+
+    .file-check {
+      accent-color: var(--accent);
+      width: 17px; height: 17px; cursor: pointer;
+    }
+
     .f-btn {
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 0;
-      font-size: 11px;
-      cursor: pointer;
-      margin-right: 5px;
+      padding: 6px 10px; border-radius: 6px;
+      border: 0; font-size: 11px; cursor: pointer;
+      margin: 2px;
       background: rgba(43, 49, 58, 0.8);
-      color: white;
-      transition: all 0.3s;
+      color: white; transition: all 0.3s;
+      font-family: 'Tajawal', sans-serif;
+      min-height: 32px;
     }
-    
-    .f-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    }
-    
-    #editor-modal {
+
+    .f-btn:hover { transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+
+    .f-btn.extract { background: rgba(255, 215, 0, 0.15); color: var(--gold); border: 1px solid rgba(255, 215, 0, 0.35); }
+    .f-btn.dl { background: rgba(0, 212, 255, 0.15); color: var(--accent); border: 1px solid rgba(0, 212, 255, 0.35); }
+    .f-btn.del { background: rgba(255, 85, 85, 0.15); color: var(--error); border: 1px solid rgba(255, 85, 85, 0.35); }
+    .f-btn.install { background: rgba(0, 255, 136, 0.12); color: var(--success); border: 1px solid rgba(0, 255, 136, 0.35); }
+
+    .selection-bar {
       display: none;
-      position: fixed;
-      inset: 0;
+      position: sticky; bottom: 0;
+      background: rgba(5, 10, 18, 0.97);
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+      z-index: 500;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .selection-bar.show { display: flex; }
+
+    .selection-info { color: var(--accent); font-weight: 700; font-size: 14px; }
+
+    /* المحرر */
+    #editor-modal {
+      display: none; position: fixed; inset: 0;
       background: rgba(0, 0, 0, 0.95);
-      z-index: 2000;
-      padding: 20px;
+      z-index: 2000; padding: 14px;
       animation: slideIn 0.3s ease-out;
     }
-    
+
     .editor-cnt {
-      background: #0d1117;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      border-radius: 8px;
+      background: #0d1117; height: 100%;
+      display: flex; flex-direction: column;
+      border-radius: 10px;
       border: 1px solid #333;
       overflow: hidden;
     }
-    
-    #ed-area {
-      flex: 1;
-      background: #0a0e14;
-      color: #e6edf3;
-      padding: 20px;
-      border: none;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      outline: none;
-      resize: none;
-      line-height: 1.6;
-    }
-    
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
+
+    .editor-head {
+      padding: 12px 16px;
+      border-bottom: 1px solid #333;
+      display: flex; justify-content: space-between;
       align-items: center;
+      background: #0a0e14;
+      flex-wrap: wrap; gap: 8px;
+    }
+
+    #ed-title { font-weight: 700; color: var(--accent); word-break: break-all; }
+
+    #ed-area {
+      flex: 1; background: #0a0e14;
+      color: #e6edf3; padding: 16px;
+      border: none; font-family: 'Courier New', monospace;
+      font-size: 13px; outline: none;
+      resize: none; line-height: 1.6;
+    }
+
+    /* المودالات */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none; align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 999; padding: 16px;
       animation: slideIn 0.3s ease-out;
     }
-    
+
     .modal {
-      width: 90%;
-      max-width: 400px;
-      background: #0c1115;
-      border-radius: 12px;
-      padding: 25px;
-      border: 1px solid var(--panel-border);
+      width: 100%; max-width: 420px;
+      background: #0c1115; border-radius: 14px;
+      padding: 22px; border: 1px solid var(--panel-border);
       backdrop-filter: blur(10px);
-      animation: slideIn 0.4s ease-out;
+      animation: slideIn 0.3s ease-out;
+      max-height: 90vh; overflow-y: auto;
     }
-    
-    .modal h3 {
-      color: var(--accent);
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-    
-    .modal input {
-      width: 100%;
-      padding: 12px;
-      margin: 15px 0;
+
+    .modal h3 { color: var(--accent); margin-bottom: 14px; font-size: 17px; }
+
+    .modal input, .modal select {
+      width: 100%; padding: 12px; margin: 10px 0;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--panel-border);
-      color: white;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s;
+      color: white; border-radius: 8px;
+      font-size: 14px; transition: all 0.3s;
+      font-family: 'Tajawal', sans-serif;
+      min-height: 46px;
     }
-    
+
     .modal input:focus {
-      outline: none;
-      border-color: var(--accent);
+      outline: none; border-color: var(--accent);
       box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
     }
-    
-    .status-running {
-      color: var(--success);
-      animation: pulse 2s infinite;
+
+    .modal-actions {
+      text-align: center; margin-top: 18px;
+      display: flex; gap: 10px; justify-content: center;
     }
-    
-    .status-offline {
-      color: var(--error);
+
+    .modal p.hint { color: var(--muted); font-size: 12px; margin-top: 8px; line-height: 1.8; }
+
+    .modal-message {
+      padding: 10px; margin-top: 12px; border-radius: 8px;
+      text-align: center; font-weight: 600; display: none;
+      font-size: 13px;
     }
-    
-    .loading-dots {
-      display: inline-flex;
-      gap: 4px;
-    }
-    
-    .loading-dots span {
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-    
-    .loading-dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .loading-dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    /* تحسينات رفع الملفات التلقائي */
-    .upload-area {
-      border: 2px dashed var(--accent);
-      border-radius: 10px;
-      padding: 40px;
-      text-align: center;
-      margin: 20px 0;
-      cursor: pointer;
+
+    .modal-message.success { background: rgba(76, 175, 80, 0.15); border: 1px solid rgba(76, 175, 80, 0.4); color: var(--success); }
+    .modal-message.error { background: rgba(244, 67, 54, 0.15); border: 1px solid rgba(244, 67, 54, 0.4); color: var(--error); }
+
+    /* اختيار اللغة */
+    .lang-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+
+    .lang-opt {
+      border: 2px solid var(--panel-border);
+      border-radius: 12px; padding: 16px 12px;
+      text-align: center; cursor: pointer;
       transition: all 0.3s;
-      background: rgba(0, 212, 255, 0.05);
-      position: relative;
     }
-    
-    .upload-area:hover {
-      background: rgba(0, 212, 255, 0.1);
-      border-color: var(--accent-light);
+
+    .lang-opt:hover { border-color: var(--accent); }
+
+    .lang-opt.selected {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.08);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
     }
-    
-    .upload-area.dragover {
-      background: rgba(0, 212, 255, 0.2);
-      border-color: var(--accent-light);
-      transform: scale(1.02);
-    }
-    
-    .upload-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
-      color: var(--accent);
-    }
-    
-    .upload-text {
-      color: var(--muted);
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    
-    .upload-hint {
-      font-size: 12px;
-      color: var(--muted);
-      opacity: 0.7;
-    }
-    
-    .file-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-    
-    .upload-progress {
+
+    .lang-opt .ico { font-size: 28px; margin-bottom: 8px; }
+    .lang-opt .t { font-weight: 800; margin-bottom: 4px; }
+    .lang-opt .d { font-size: 11px; color: var(--muted); }
+
+    .toast {
+      position: fixed; bottom: 80px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(12, 17, 29, 0.97);
+      border: 1px solid var(--accent);
+      color: #fff; padding: 12px 24px;
+      border-radius: 12px; z-index: 3000;
+      animation: slideIn 0.3s ease-out;
+      font-size: 14px; font-weight: 600;
+      max-width: 90vw; text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       display: none;
-      margin-top: 15px;
     }
-    
-    .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--gradient);
-      width: 0%;
-      transition: width 0.3s;
-    }
-    
-    .upload-status {
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--accent);
-    }
-    
+
+    .toast.error { border-color: var(--error); }
+    .toast.show { display: block; }
+
+    /* ====== موبايل ====== */
     @media (max-width: 768px) {
-      .mgr-grid {
-        grid-template-columns: 1fr;
+      .mgr-grid { grid-template-columns: 1fr; }
+      .console-box { height: 380px; }
+      #cardsContainer { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .card { padding: 24px 12px; }
+      .card-menu { opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding-bottom: 30px; font-size: 14px; }
+
+      .topbar { padding: 10px 12px; }
+      .panel-logo { font-size: 15px; }
+      .quota-widget { width: 100%; justify-content: space-between; order: 3; }
+      .quota-widget .bar { width: 55%; }
+
+      .container { margin: 14px auto; padding: 0 10px; }
+      .srv-header-bar { flex-direction: column; align-items: stretch; }
+      #srvHeader { font-size: 18px; }
+      .tab-switch { width: 100%; }
+      .tab-switch .new-btn { flex: 1; padding: 10px 8px; font-size: 12px; }
+
+      #cardsContainer { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
+
+      .fm-toolbar { flex-direction: column; align-items: stretch; }
+      .fm-actions { justify-content: space-between; }
+      .fm-actions .new-btn, .fm-actions button { flex: 1; padding: 10px 6px; font-size: 11px; min-width: 0; }
+
+      .upload-area { padding: 24px 12px; }
+      .upload-icon { font-size: 32px; }
+
+      /* الجدول يتحول لكروت على الموبايل */
+      .files-table, .files-table tbody, .files-table tr, .files-table td { display: block; width: 100%; }
+      .files-table thead { display: none; }
+      .files-table tr {
+        background: var(--card);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        margin-bottom: 10px;
+        padding: 6px;
       }
-      
-      #cardsContainer {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      .files-table tr:hover td { background: transparent; }
+      .files-table td { border: none; padding: 8px 10px; }
+      .files-table td.td-actions {
+        display: flex; flex-wrap: wrap; gap: 6px;
+        border-top: 1px solid var(--panel-border);
       }
-      
-      .topbar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-      }
-      
-      .user-info {
-        flex-direction: column;
-        gap: 5px;
-      }
+      .files-table td.td-size, .files-table td.td-mod { display: inline-block; width: 50%; color: var(--muted); font-size: 11px; }
+      .f-btn { flex: 1; min-height: 38px; }
+
+      .selection-bar { padding: 10px; }
+      .selection-bar .fm-actions { width: 100%; }
+      .selection-bar .f-btn { flex: 1; min-height: 40px; }
+
+      .modal { padding: 18px 14px; }
+      .lang-options { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      .toast { bottom: 140px; }
     }
   </style>
 </head>
 <body>
-  <!-- خلفية متحركة -->
   <div class="animated-bg" id="animatedBg"></div>
-  
+
   <header class="topbar">
-    <div style="display:flex;align-items:center;gap:12px">
-      <button onclick="goHome()" style="background:none;border:0;color:white;font-size:20px;cursor:pointer;transition:0.3s;padding:5px;border-radius:5px;">🏠</button>
-      <div class="panel-logo" id="headerTitle"> aMiNe KiNg HoSt</div>
+    <div class="topbar-left">
+      <button class="mini-btn" onclick="goHome()" title="الرئيسية" style="width:38px;height:38px;border-radius:10px;background:rgba(0,212,255,0.08);border:1px solid var(--panel-border)">🏠</button>
+      <div class="panel-logo">Gojgui Pro</div>
     </div>
-    <div style="display:flex;align-items:center;gap:15px">
+
+    <div class="quota-widget" id="quotaWidget" style="display:none">
+      <span>💾 المساحة</span>
+      <div class="bar"><div class="fill" id="diskBar"></div></div>
+      <span id="diskTxt">0 MB</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px">
       <div class="user-info" id="userInfo">
-        <span>Welcome, <span id="usernameDisplay">User</span></span>
-        <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+        <span>👤 <span id="usernameDisplay">User</span></span>
+        <button class="logout-btn" onclick="logout()">خروج</button>
       </div>
-      <button id="newBtn" class="new-btn">+ أنشاء سرفر </button>
+      <button id="newBtn" class="new-btn">+ خادم جديد</button>
     </div>
   </header>
 
+  <!-- ====== الصفحة الرئيسية ====== -->
   <main class="container" id="homeView">
     <div id="cardsContainer"></div>
   </main>
 
+  <!-- ====== عرض الخادم ====== -->
   <main class="container" id="serverView" style="display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h1 id="srvHeader" style="margin:0;color:var(--accent);font-size:24px;">SERVER</h1>
-      <div style="display:flex;gap:10px">
-        <button id="tabC" class="new-btn" onclick="switchTab('console')">Console</button>
-        <button id="tabF" class="new-btn" style="background:rgba(34,34,34,0.8);color:white" onclick="switchTab('files')">File Manager</button>
+    <div class="srv-header-bar">
+      <h1 id="srvHeader">SERVER</h1>
+      <div class="tab-switch">
+        <button id="tabC" class="new-btn" onclick="switchTab('console')">🖥️ الكونسول</button>
+        <button id="tabF" class="new-btn btn-dark" onclick="switchTab('files')">📁 إدارة الملفات</button>
       </div>
     </div>
 
+    <!-- الكونسول -->
     <div id="viewConsole" class="mgr-grid">
       <div class="console-box" id="logOut">
-        <div class="loading-dots">
-          <span></span><span></span><span></span>
-        </div>
-        Initializing console...
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        جاري التهيئة...
       </div>
       <div>
-        <button id="btnStart" class="btn-act" style="background:var(--gradient)" onclick="srvAction('start')">START</button>
-        <button id="btnRestart" class="btn-act" style="background:rgba(43,49,58,0.8)" onclick="srvAction('restart')">RESTART</button>
-        <button class="btn-act" style="background:var(--error)" onclick="srvAction('stop')">STOP</button>
-        
+        <button id="btnStart" class="btn-act" style="background:var(--gradient)" onclick="srvAction('start')">▶ تشغيل</button>
+        <button id="btnRestart" class="btn-act btn-dark" onclick="srvAction('restart')">🔄 إعادة تشغيل</button>
+        <button class="btn-act" style="background:var(--error)" onclick="srvAction('stop')">⏹ إيقاف</button>
+
         <div class="stat-card">
-          <div style="font-size:20px;">⚡</div>
+          <div style="font-size:20px">⚡</div>
+          <div><small>الحالة</small><br><b id="statusTxt" class="status-offline">Offline</b></div>
+        </div>
+
+        <div class="stat-card">
+          <div style="font-size:20px">🧠</div>
+          <div><small>استهلاك الرام</small><br><b id="memTxt">0 MB</b> <small id="ramLimitTxt" style="color:var(--accent)"></small></div>
+        </div>
+
+        <div class="stat-card">
+          <div style="font-size:20px">📊</div>
+          <div><small>المعالج</small><br><b id="cpuTxt">0%</b></div>
+        </div>
+
+        <div class="stat-card">
+          <div style="font-size:20px">💿</div>
           <div>
-            <small style="color:var(--muted)">STATUS</small><br>
-            <b id="statusTxt" class="status-offline">Offline</b>
+            <small>الملف الرئيسي</small><br>
+            <b id="mainFileTxt" style="color:var(--accent);cursor:pointer" onclick="changeStartup()">اضغط للتحديد</b>
           </div>
         </div>
-        
+
         <div class="stat-card">
-          <div style="font-size:20px;">🧠</div>
-          <div>
-            <small style="color:var(--muted)">RAM USAGE</small><br>
-            <b id="memTxt">0 MB</b>
-          </div>
+          <div style="font-size:20px">🌐</div>
+          <div><small>عنوان IP</small><br><b id="ipTxt">127.0.0.1</b></div>
         </div>
-        
+
         <div class="stat-card">
-          <div style="font-size:20px;">💿</div>
-          <div>
-            <small style="color:var(--muted)">MAIN FILE</small><br>
-            <b id="mainFileTxt" style="color:var(--accent);cursor:pointer" onclick="changeStartup()">Not Set</b>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div style="font-size:20px;">🌐</div>
-          <div>
-            <small style="color:var(--muted)">IP ADDRESS</small><br>
-            <b id="ipTxt">127.0.0.1</b>
-          </div>
+          <div style="font-size:20px">💾</div>
+          <div><small>حجم الخادم</small><br><b id="srvDiskTxt">0 MB</b></div>
         </div>
       </div>
     </div>
 
+    <!-- إدارة الملفات -->
     <div id="viewFiles" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <h3 style="color:var(--accent);margin:0">Files Manager</h3>
-        <div style="display:flex;gap:10px">
-          <button class="new-btn" onclick="document.getElementById('fileInput').click()">📁 رفع ملف </button>
-          <button class="new-btn" onclick="loadFiles()" style="background:rgba(34,34,34,0.8)"</button>
+      <div class="fm-toolbar">
+        <h3 style="color:var(--accent);margin:0;font-size:18px">📁 إدارة الملفات</h3>
+        <div class="fm-actions">
+          <button class="new-btn" onclick="document.getElementById('fileInput').click()">📤 رفع ملفات</button>
+          <button class="new-btn btn-dark" onclick="openCreateFolder()">📂 مجلد جديد</button>
+          <button class="new-btn btn-dark" onclick="openCreateFile()">📄 ملف جديد</button>
+          <button class="new-btn btn-dark" onclick="loadFiles()">🔄</button>
         </div>
       </div>
-      
-      <!-- منطقة رفع الملفات التلقائي -->
-      <div class="upload-area" id="uploadArea" 
-           ondragover="handleDragOver(event)" 
-           ondragleave="handleDragLeave(event)" 
+
+      <!-- مسار التنقل -->
+      <div class="breadcrumb" id="breadcrumb"></div>
+
+      <!-- منطقة الرفع -->
+      <div class="upload-area" id="uploadArea"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
            ondrop="handleDrop(event)">
         <div class="upload-icon">🚀</div>
-        <div class="upload-text">يمكنك التحكم في ملفاتك بشكل كامل</div>
-        <div class="upload-hint">سيتم رفع الملفات تلقائياً عند الاختيار (يدعم ملفات متعددة)</div>
-        <input type="file" class="file-input" id="fileInput" multiple 
-               onchange="handleFileSelect(this)">
-        
-        <!-- مؤشر التقدم -->
+        <div class="upload-text">اسحب ملفاتك هنا أو اضغط للاختيار</div>
+        <div class="upload-hint">يدعم ملفات متعددة — الرفع تلقائي بمجرد الاختيار</div>
+        <label class="auto-extract-toggle">
+          <input type="checkbox" id="autoExtractChk" checked>
+          <span>📦 فك ضغط الأرشيفات تلقائياً بعد الرفع (ZIP / TAR / 7Z)</span>
+        </label>
+        <input type="file" class="file-input" id="fileInput" multiple onchange="handleFileSelect(this)">
+
         <div class="upload-progress" id="uploadProgress">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
           <div class="upload-status" id="uploadStatus">جاري الرفع...</div>
         </div>
       </div>
-      
+
       <!-- قائمة الملفات -->
-      <table>
+      <table class="files-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Actions</th>
+            <th style="width:40px"><input type="checkbox" class="file-check" id="selectAllChk" onchange="toggleSelectAll(this)"></th>
+            <th>الاسم</th>
+            <th>الحجم</th>
+            <th>آخر تعديل</th>
+            <th>الإجراءات</th>
           </tr>
         </thead>
         <tbody id="serverFileList"></tbody>
       </table>
+
+      <!-- شريط التحديد -->
+      <div class="selection-bar" id="selectionBar">
+        <span class="selection-info" id="selectionInfo">0 محدد</span>
+        <div class="fm-actions">
+          <button class="f-btn extract" onclick="openArchiveModal()">📦 ضغط المحدد ZIP</button>
+          <button class="f-btn del" onclick="deleteSelected()">🗑️ حذف المحدد</button>
+          <button class="f-btn" onclick="clearSelection()">إلغاء</button>
+        </div>
+      </div>
     </div>
   </main>
 
+  <!-- محرر الملفات -->
   <div id="editor-modal">
     <div class="editor-cnt">
-      <div style="padding:15px; border-bottom: 1px solid #333; display:flex; justify-content: space-between; align-items:center;background:#0a0e14;">
-        <span id="ed-title" style="font-weight:bold; color:var(--accent);"></span>
-        <div style="display:flex; gap:10px;">
-          <button class="new-btn" onclick="saveFile()">💾 Save</button>
-          <button class="new-btn" style="background:var(--error);color:white" onclick="closeEditor()">❌ Exit</button>
+      <div class="editor-head">
+        <span id="ed-title">Editing</span>
+        <div style="display:flex;gap:8px">
+          <button class="new-btn" onclick="saveFile()">💾 حفظ</button>
+          <button class="new-btn" style="background:var(--error);color:white" onclick="closeEditor()">✖ خروج</button>
         </div>
       </div>
       <textarea id="ed-area" spellcheck="false"></textarea>
     </div>
   </div>
 
+  <!-- مودال عام -->
   <div id="modalBackdrop" class="modal-backdrop">
     <div class="modal">
       <h3 id="mTitle">Title</h3>
-      <input id="mIn" placeholder="Enter value...">
-      <div style="text-align:right;margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
-        <button class="new-btn" style="background:transparent;color:var(--muted);border:1px solid var(--muted)" onclick="closeM()">Cancel</button>
-        <button id="mConfirm" class="new-btn">Confirm</button>
+      <input id="mIn" placeholder="أدخل القيمة..." autocomplete="off">
+      <div class="modal-actions">
+        <button class="new-btn btn-dark" style="border:1px solid var(--muted);color:var(--muted)" onclick="closeM()">إلغاء</button>
+        <button id="mConfirm" class="new-btn">تأكيد</button>
+      </div>
+      <div id="mMessage" class="modal-message"></div>
+    </div>
+  </div>
+
+  <!-- مودال إنشاء خادم جديد -->
+  <div id="newServerBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h3>🚀 إنشاء خادم جديد</h3>
+      <input id="nsName" placeholder="اسم الخادم (إنجليزي فقط)">
+      <p class="hint">اختر لغة البرمجة التي سيعمل بها الخادم:</p>
+      <div class="lang-options">
+        <div class="lang-opt selected" id="optPython" onclick="selectLang('python')">
+          <div class="ico">🐍</div>
+          <div class="t">Python</div>
+          <div class="d">Flask / Django / بوتات<br>requirements.txt</div>
+        </div>
+        <div class="lang-opt" id="optNodejs" onclick="selectLang('nodejs')">
+          <div class="ico">🟢</div>
+          <div class="t">Node.js</div>
+          <div class="d">Express / API / بوتات<br>package.json</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="new-btn btn-dark" onclick="closeNewServer()">إلغاء</button>
+        <button class="new-btn" id="nsCreateBtn" onclick="createServer()">✨ إنشاء</button>
+      </div>
+      <div id="nsMessage" class="modal-message"></div>
+    </div>
+  </div>
+
+  <!-- مودال الضغط -->
+  <div id="archiveBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <h3>📦 ضغط الملفات المحددة</h3>
+      <input id="archName" placeholder="اسم الأرشيف (مثال: backup.zip)">
+      <div class="modal-actions">
+        <button class="new-btn btn-dark" onclick="closeArchiveModal()">إلغاء</button>
+        <button class="new-btn" onclick="archiveSelected()">✨ ضغط</button>
       </div>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     let currentSrv = null, poll = null, isRunning = false, currentFile = null;
     let currentUsername = "";
-    let animationsEnabled = true;
     let isUploading = false;
+    let currentPath = "";        // المسار الحالي داخل الخادم
+    let currentFiles = [];       // ملفات المجلد الحالي
+    let selectedFiles = new Set();
+    let newServerLang = "python";
+    let nodeAvailable = true;
 
-    // إنشاء الخلفية المتحركة
+    /* ====== الخلفية ====== */
     function createAnimatedBackground() {
-      if (!animationsEnabled) return;
-      
       const container = document.getElementById('animatedBg');
       if (!container) return;
-      
       container.innerHTML = '';
-      
-      for (let i = 0; i < 8; i++) {
+      const count = window.innerWidth < 600 ? 4 : 8;
+      for (let i = 0; i < count; i++) {
         const line = document.createElement('div');
         line.className = 'animated-line';
         line.style.top = `${Math.random() * 100}%`;
@@ -791,142 +893,170 @@
       }
     }
 
-    // التحقق من المستخدم
+    /* ====== أدوات عامة ====== */
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show' + (isError ? ' error' : '');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    async function api(url, options = {}) {
+      const r = await fetch(url, options);
+      if (r.status === 401) { window.location.href = '/login'; throw new Error('unauthorized'); }
+      return r;
+    }
+
+    /* ====== التحقق والتهيئة ====== */
     async function checkAuth() {
       try {
         const r = await fetch('/api/current_user');
         const d = await r.json();
-        if (!d.success) {
-          window.location.href = '/login';
-          return;
-        }
+        if (!d.success) { window.location.href = '/login'; return; }
         currentUsername = d.username;
-        
-        const usernameDisplay = document.getElementById('usernameDisplay');
-        usernameDisplay.textContent = d.username;
-        
-        if (d.has_remember_token) {
-          usernameDisplay.innerHTML = `${d.username} <span style="font-size:10px;color:var(--accent);margin-left:5px;animation:pulse 2s infinite">●</span>`;
+        document.getElementById('usernameDisplay').textContent = d.username;
+        if (d.is_admin) {
+          document.getElementById('usernameDisplay').innerHTML = `${d.username} <span style="color:var(--gold);font-size:10px">👑</span>`;
         }
-        
         createAnimatedBackground();
+        loadUsage();
         loadServers();
-        
+        checkRuntimes();
       } catch (error) {
         window.location.href = '/login';
       }
+    }
+
+    async function checkRuntimes() {
+      try {
+        const r = await fetch('/api/system/runtimes');
+        const d = await r.json();
+        if (d.success) nodeAvailable = d.runtimes.node.available;
+      } catch (e) { nodeAvailable = true; }
+    }
+
+    async function loadUsage() {
+      try {
+        const r = await fetch('/api/user/usage');
+        if (r.status === 401) return;
+        const d = await r.json();
+        if (!d.success) return;
+        const widget = document.getElementById('quotaWidget');
+        widget.style.display = 'flex';
+        const fill = document.getElementById('diskBar');
+        fill.style.width = d.disk_percent + '%';
+        fill.className = 'fill' + (d.disk_percent > 85 ? ' danger' : '');
+        document.getElementById('diskTxt').textContent =
+          d.unlimited ? `${d.disk_used_mb} MB (بلا حدود)` : `${d.disk_used_mb} / ${d.disk_limit_mb} MB`;
+      } catch (e) { }
     }
 
     async function logout() {
-      if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        const btn = document.querySelector('.logout-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = 'جاري تسجيل الخروج...';
-        btn.disabled = true;
-        
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login';
-      }
+      if (!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
     }
 
+    /* ====== الخوادم ====== */
     async function loadServers() {
       try {
-        const r = await fetch('/servers'); 
-        if (r.status === 401) {
-          window.location.href = '/login';
-          return;
-        }
+        const r = await api('/servers');
         const d = await r.json();
-        const cont = document.getElementById('cardsContainer'); 
+        const cont = document.getElementById('cardsContainer');
         cont.innerHTML = '';
-        
+
         if (!d.servers || d.servers.length === 0) {
           cont.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 50px; position: relative;">
-              <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 2s infinite;">📂</div>
-              <h3 style="margin-bottom: 10px; color: var(--accent);">لا توجد خوادم</h3>
-              <p style="color: var(--muted); margin-bottom: 20px;">أنشئ خادمك الأول باستخدام زر "+ أنشاء سرفر"</p>
-              <div style="display: flex; justify-content: center; gap: 10px;">
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite;"></div>
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite 0.2s;"></div>
-                <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: pulse 1s infinite 0.4s;"></div>
-              </div>
-            </div>
-          `;
+            <div style="grid-column:1/-1;text-align:center;padding:50px 20px;">
+              <div style="font-size:48px;margin-bottom:16px;animation:pulse 2s infinite">📂</div>
+              <h3 style="margin-bottom:10px;color:var(--accent)">لا توجد خوادم</h3>
+              <p style="color:var(--muted);margin-bottom:6px">أنشئ خادمك الأول — Python أو Node.js</p>
+              <p style="color:var(--muted);font-size:12px">اضغط على زر "+ خادم جديد" بالأعلى</p>
+            </div>`;
           return;
         }
-        
+
         d.servers.forEach((s, index) => {
-          const div = document.createElement('div'); 
+          const div = document.createElement('div');
           div.className = 'card';
-          div.style.animationDelay = `${index * 0.1}s`;
+          div.style.animationDelay = `${index * 0.08}s`;
           div.innerHTML = `
-            <div class="srv-icon"></div>
-            <div class="card-title">${s.title}</div>
-            <div class="card-sub">${s.subtitle}</div>
-            <div style="margin-top: 10px; font-size: 10px; color: var(--accent); opacity: 0.7;">
-              ${s.startup_file ? '⚡' : '⭕'} ${s.startup_file || 'No main file'}
+            <div class="card-menu">
+              <button class="mini-btn" title="إعادة تسمية" onclick="event.stopPropagation();renameServer('${s.folder}')">✏️</button>
+              <button class="mini-btn danger" title="حذف" onclick="event.stopPropagation();deleteServer('${s.folder}')">🗑️</button>
             </div>
-          `;
-          div.onclick = () => openServer(s); 
+            <div class="srv-icon"></div>
+            <div class="card-title">${escapeHtml(s.title)}</div>
+            <div class="card-sub">${s.subtitle}</div>
+            <div class="card-badges">
+              <span class="chip chip-${s.language}">${s.language === 'nodejs' ? '🟢 Node.js' : '🐍 Python'}</span>
+              ${s.running ? '<span class="chip chip-run">● يعمل</span>' : '<span class="chip chip-off">○ متوقف</span>'}
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--accent);opacity:0.75">
+              ${s.startup_file ? '⚡ ' + escapeHtml(s.startup_file) : '⭕ بدون ملف رئيسي'}
+            </div>`;
+          div.onclick = () => openServer(s);
           cont.appendChild(div);
         });
-        
-      } catch (error) {
-        console.error('Error loading servers:', error);
-      }
+      } catch (error) { console.error('Error loading servers:', error); }
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
     function openServer(s) {
-      currentSrv = s; 
+      currentSrv = s;
+      currentPath = "";
+      selectedFiles.clear();
       document.getElementById('homeView').style.display = 'none';
       document.getElementById('newBtn').style.display = 'none';
-      document.getElementById('serverView').style.display = 'block'; 
+      document.getElementById('serverView').style.display = 'block';
       document.getElementById('srvHeader').textContent = s.title;
-      document.getElementById('mainFileTxt').textContent = s.startup_file || "Click to set"; 
+      document.getElementById('mainFileTxt').textContent = s.startup_file || "اضغط للتحديد";
       switchTab('console');
+      loadUsage();
     }
 
-    function goHome() { 
-      document.getElementById('homeView').style.display = 'block'; 
-      document.getElementById('newBtn').style.display = 'block'; 
-      document.getElementById('serverView').style.display = 'none'; 
+    function goHome() {
+      document.getElementById('homeView').style.display = 'block';
+      document.getElementById('newBtn').style.display = 'inline-flex';
+      document.getElementById('serverView').style.display = 'none';
       clearInterval(poll);
       loadServers();
+      loadUsage();
     }
 
     function switchTab(t) {
       document.getElementById('viewConsole').style.display = t === 'console' ? 'grid' : 'none';
       document.getElementById('viewFiles').style.display = t === 'files' ? 'block' : 'none';
-      if (t === 'console') {
-        startPolling();
-      } else {
-        clearInterval(poll);
-        loadFiles();
-      }
+      document.getElementById('tabC').classList.toggle('btn-dark', t !== 'console');
+      document.getElementById('tabF').classList.toggle('btn-dark', t !== 'files');
+      if (t === 'console') { startPolling(); }
+      else { clearInterval(poll); loadFiles(); }
     }
 
+    /* ====== الكونسول ====== */
     async function startPolling() {
       if (poll) clearInterval(poll);
-      
       const fn = async () => {
         try {
-          const r = await fetch(`/server/stats/${currentSrv.folder}`);
-          if (r.status === 401) {
-            window.location.href = '/login';
-            return;
-          }
+          const r = await api(`/server/stats/${currentSrv.folder}`);
           const d = await r.json();
-          
-          document.getElementById('logOut').textContent = d.logs || "يتم قراءة ملفك...";
-          document.getElementById('statusTxt').textContent = d.status;
+
+          document.getElementById('logOut').textContent = d.logs || "في انتظار تشغيل الخادم...";
+          document.getElementById('statusTxt').textContent = d.status === "Running" ? "يعمل ✅" : "متوقف";
           document.getElementById('memTxt').textContent = d.mem;
+          document.getElementById('ramLimitTxt').textContent = d.ram_limit_mb === -1 ? "" : `/ ${d.ram_limit_mb} MB`;
+          document.getElementById('cpuTxt').textContent = d.cpu;
           document.getElementById('ipTxt').textContent = d.ip || '127.0.0.1';
-          
+          document.getElementById('srvDiskTxt').textContent = d.disk_used_mb + ' MB';
+          document.getElementById('mainFileTxt').textContent = d.startup_file || "اضغط للتحديد";
+
           isRunning = d.status === "Running";
           const btnStart = document.getElementById('btnStart');
           const statusTxt = document.getElementById('statusTxt');
-          
           if (isRunning) {
             btnStart.className = 'btn-act running';
             btnStart.disabled = true;
@@ -937,164 +1067,407 @@
             btnStart.style.background = 'var(--gradient)';
             statusTxt.className = 'status-offline';
           }
-          
-          const lo = document.getElementById('logOut'); 
+          const lo = document.getElementById('logOut');
           lo.scrollTop = lo.scrollHeight;
-          
-        } catch(e) {
-          console.error('Polling error:', e);
-        }
+        } catch (e) { console.error('Polling error:', e); }
       };
-      
-      fn(); 
+      fn();
       poll = setInterval(fn, 2000);
     }
 
     async function srvAction(act) {
       if (act === 'start' && isRunning) return;
-      
-      const btn = document.querySelector(`button[onclick="srvAction('${act}')"]`);
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
-      btn.disabled = true;
-      
       try {
-        const r = await fetch(`/server/action/${currentSrv.folder}/${act}`, { method: 'POST' });
-        if (r.status === 401) {
-          window.location.href = '/login';
-          return;
-        }
-      } catch (error) {
-        console.error('Action error:', error);
-      } finally {
-        setTimeout(() => {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }, 1000);
+        const r = await api(`/server/action/${currentSrv.folder}/${act}`, { method: 'POST' });
+        const d = await r.json().catch(() => ({}));
+        if (!d.success && d.message) showToast('❌ ' + d.message, true);
+      } catch (error) { console.error('Action error:', error); }
+    }
+
+    /* ====== إدارة الخادم ====== */
+    function renameServer(folder) {
+      openM("✏️ إعادة تسمية الخادم", "", async (v) => {
+        if (!v.trim()) return;
+        await api(`/server/rename/${folder}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: v.trim() })
+        });
+        closeM(); loadServers(); showToast('✅ تمت إعادة التسمية');
+      });
+    }
+
+    async function deleteServer(folder) {
+      if (!confirm(`⚠️ حذف الخادم "${folder}" وكل ملفاته نهائياً؟`)) return;
+      const r = await api(`/server/delete/${folder}`, { method: 'POST' });
+      const d = await r.json();
+      if (d.success) {
+        showToast('✅ تم حذف الخادم');
+        if (currentSrv && currentSrv.folder === folder) goHome();
+        else loadServers();
+      } else showToast('❌ ' + (d.message || 'فشل الحذف'), true);
+    }
+
+    function changeStartup() {
+      openM("💿 تحديد الملف الرئيسي", currentSrv.startup_file || "main.py", async (v) => {
+        if (!v.trim()) return;
+        await api(`/server/set-startup/${currentSrv.folder}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: v.trim() })
+        });
+        currentSrv.startup_file = v.trim();
+        document.getElementById('mainFileTxt').textContent = v.trim();
+        closeM();
+        showToast('✅ تم تحديد الملف الرئيسي');
+      });
+    }
+
+    /* ====== إنشاء خادم جديد ====== */
+    function selectLang(lang) {
+      newServerLang = lang;
+      document.getElementById('optPython').classList.toggle('selected', lang === 'python');
+      document.getElementById('optNodejs').classList.toggle('selected', lang === 'nodejs');
+    }
+
+    function closeNewServer() {
+      document.getElementById('newServerBackdrop').style.display = 'none';
+    }
+
+    function openNewServer() {
+      if (!nodeAvailable) {
+        showToast('⚠️ Node.js غير متوفر على الخادم — Python فقط متاح حالياً', true);
       }
+      document.getElementById('nsName').value = '';
+      document.getElementById('nsMessage').style.display = 'none';
+      document.getElementById('newServerBackdrop').style.display = 'flex';
+      selectLang('python');
+    }
+
+    async function createServer() {
+      const name = document.getElementById('nsName').value.trim();
+      if (!name) { showMMessage('الاسم مطلوب', 'error'); return; }
+
+      if (newServerLang === 'nodejs' && !nodeAvailable) {
+        showMMessage('Node.js غير متوفر على هذا الخادم', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('nsCreateBtn');
+      btn.disabled = true; btn.textContent = '⏳ جاري الإنشاء...';
+
+      try {
+        const r = await api('/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, language: newServerLang })
+        });
+        const d = await r.json();
+        if (d.success) {
+          closeNewServer();
+          showToast(`✅ تم إنشاء الخادم (${newServerLang === 'nodejs' ? 'Node.js' : 'Python'})`);
+          loadServers();
+        } else {
+          showMMessage(d.message === 'Exists' ? 'الاسم مستخدم بالفعل' : (d.message || 'فشل الإنشاء'), 'error');
+        }
+      } catch (e) {
+        showMMessage('خطأ في الاتصال', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '✨ إنشاء';
+      }
+    }
+
+    /* ====== إدارة الملفات ====== */
+    function breadcrumbHtml() {
+      const parts = currentPath ? currentPath.split('/') : [];
+      let html = `<span class="crumb" onclick="navigateTo('')">🏠 ${escapeHtml(currentSrv.title)}</span>`;
+      let acc = "";
+      parts.forEach(p => {
+        acc = acc ? `${acc}/${p}` : p;
+        html += `<span class="crumb-sep">›</span><span class="crumb ${acc === currentPath ? 'crumb-here' : ''}" onclick="navigateTo('${acc}')">${escapeHtml(p)}</span>`;
+      });
+      return html;
+    }
+
+    function navigateTo(path) {
+      currentPath = path;
+      selectedFiles.clear();
+      updateSelectionBar();
+      loadFiles();
     }
 
     async function loadFiles() {
       try {
-        const r = await fetch(`/files/list/${currentSrv.folder}`);
-        if (r.status === 401) {
-          window.location.href = '/login';
-          return;
-        }
-        const files = await r.json();
-        
-        const fileList = document.getElementById('serverFileList');
-        fileList.innerHTML = files.map(f => `
-          <tr>
-            <td style="color:var(--accent);cursor:pointer" onclick="openEditor('${f.name}')">
-              📄 ${f.name}
-            </td>
-            <td>${f.size}</td>
-            <td>
-              ${f.name === 'requirements.txt' ? 
-                `<button class="f-btn" style="background:var(--accent);color:black" onclick="installReq()">📦 Install</button>` : ''}
-              <button class="f-btn" onclick="renameF('${f.name}')">✏️ Rename</button>
-              <button class="f-btn" style="background:var(--error)" onclick="deleteF('${f.name}')">🗑️ Delete</button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (error) {
-        console.error('Error loading files:', error);
+        const r = await api(`/files/list/${currentSrv.folder}?path=${encodeURIComponent(currentPath)}`);
+        if (r.status === 404) { showToast('المجلد غير موجود', true); currentPath = ""; }
+        const d = await r.json();
+        currentFiles = d.files || [];
+        document.getElementById('breadcrumb').innerHTML = breadcrumbHtml();
+        renderFiles();
+      } catch (error) { console.error('Error loading files:', error); }
+    }
+
+    function renderFiles() {
+      const list = document.getElementById('serverFileList');
+      if (currentFiles.length === 0) {
+        list.innerHTML = `
+          <tr><td colspan="5" style="text-align:center;padding:36px;color:var(--muted)">
+            📭 المجلد فارغ — ارفع ملفاتك أو أنشئ ملفاً جديداً
+          </td></tr>`;
+        return;
+      }
+
+      const textExts = ['.txt', '.py', '.js', '.json', '.html', '.css', '.md', '.yml', '.yaml', '.xml', '.csv', '.env', '.ini', '.cfg', '.sh', '.sql', '.log', '.ts', '.jsx', '.tsx', '.toml'];
+
+      list.innerHTML = currentFiles.map(f => {
+        const rel = currentPath ? `${currentPath}/${f.name}` : f.name;
+        const isText = !f.is_dir && (textExts.includes(f.ext) || f.name === 'requirements.txt' || f.name === 'package.json');
+        const isInstallable = f.name === 'requirements.txt' || f.name === 'package.json';
+        return `
+        <tr data-rel="${escapeHtml(rel)}">
+          <td><input type="checkbox" class="file-check" data-rel="${escapeHtml(rel)}" onchange="toggleSelect('${escapeHtml(rel)}', this)" ${selectedFiles.has(rel) ? 'checked' : ''}></td>
+          <td>
+            <span class="fname ${f.is_dir ? 'dir' : ''}" onclick="${f.is_dir ? `navigateTo('${escapeHtml(rel)}')` : (isText ? `openEditor('${escapeHtml(rel)}')` : '')}">
+              ${f.is_dir ? '📂' : fileIcon(f)} ${escapeHtml(f.name)}
+            </span>
+          </td>
+          <td class="td-size">${f.size}</td>
+          <td class="td-mod">${f.modified}</td>
+          <td class="td-actions">
+            ${f.is_archive ? `<button class="f-btn extract" onclick="extractItem('${escapeHtml(rel)}')">📦 فك ضغط</button>` : ''}
+            ${isInstallable ? `<button class="f-btn install" onclick="installPkgs()">📦 تثبيت</button>` : ''}
+            <button class="f-btn dl" onclick="downloadItem('${escapeHtml(rel)}')">⬇️ تحميل</button>
+            ${isText ? `<button class="f-btn" onclick="openEditor('${escapeHtml(rel)}')">✏️ تحرير</button>` : ''}
+            <button class="f-btn" onclick="copyItem('${escapeHtml(rel)}')">📋 نسخ</button>
+            <button class="f-btn" onclick="openMoveModal('${escapeHtml(rel)}')">↔️ نقل</button>
+            <button class="f-btn" onclick="renameItem('${escapeHtml(rel)}', '${escapeHtml(f.name)}')">✏️ تسمية</button>
+            <button class="f-btn del" onclick="deleteItem('${escapeHtml(rel)}', ${f.is_dir})">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function fileIcon(f) {
+      if (f.is_archive) return '🗜️';
+      if (f.ext === '.py') return '🐍';
+      if (f.ext === '.js' || f.ext === '.json' || f.ext === '.ts') return '📜';
+      if (f.ext === '.html') return '🌐';
+      if (f.ext === '.css') return '🎨';
+      if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'].includes(f.ext)) return '🖼️';
+      if (['.mp3', '.wav', '.ogg'].includes(f.ext)) return '🎵';
+      if (['.mp4', '.avi', '.mkv', '.mov'].includes(f.ext)) return '🎬';
+      return '📄';
+    }
+
+    /* ====== التحديد المتعدد ====== */
+    function toggleSelect(rel, chk) {
+      if (chk.checked) selectedFiles.add(rel);
+      else selectedFiles.delete(rel);
+      updateSelectionBar();
+    }
+
+    function toggleSelectAll(chk) {
+      if (chk.checked) currentFiles.forEach(f => {
+        const rel = currentPath ? `${currentPath}/${f.name}` : f.name;
+        selectedFiles.add(rel);
+      });
+      else selectedFiles.clear();
+      renderFiles();
+      updateSelectionBar();
+    }
+
+    function updateSelectionBar() {
+      const bar = document.getElementById('selectionBar');
+      document.getElementById('selectionInfo').textContent = `${selectedFiles.size} محدد`;
+      bar.classList.toggle('show', selectedFiles.size > 0);
+      if (selectedFiles.size === 0) {
+        const chk = document.getElementById('selectAllChk');
+        if (chk) chk.checked = false;
       }
     }
 
-    async function installReq() {
-      await fetch(`/files/install/${currentSrv.folder}`, { method: 'POST' });
-      switchTab('console');
+    function clearSelection() {
+      selectedFiles.clear();
+      renderFiles();
+      updateSelectionBar();
     }
 
-    async function openEditor(name) {
-      currentFile = name;
-      document.getElementById('ed-title').innerText = `Editing: ${name}`;
-      
+    /* ====== عمليات الملفات ====== */
+    async function fileOp(url, body, successMsg) {
       try {
-        const res = await fetch(`/files/content/${currentSrv.folder}/${name}`);
+        const r = await api(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✅ ' + (d.message || successMsg));
+          loadFiles(); loadUsage();
+          return true;
+        } else {
+          showToast('❌ ' + (d.message || 'فشلت العملية'), true);
+          return false;
+        }
+      } catch (e) {
+        showToast('⚠️ خطأ في الاتصال', true);
+        return false;
+      }
+    }
+
+    function openCreateFolder() {
+      openM("📂 مجلد جديد", "", async (v) => {
+        if (!v.trim()) return;
+        await fileOp(`/files/create-folder/${currentSrv.folder}`, { name: v.trim(), path: currentPath }, 'تم إنشاء المجلد');
+        closeM();
+      });
+    }
+
+    function openCreateFile() {
+      openM("📄 ملف جديد", "", async (v) => {
+        if (!v.trim()) return;
+        await fileOp(`/files/create-file/${currentSrv.folder}`, { name: v.trim(), path: currentPath }, 'تم إنشاء الملف');
+        closeM();
+      });
+    }
+
+    function renameItem(rel, oldName) {
+      openM("✏️ إعادة تسمية", oldName, async (v) => {
+        if (!v.trim()) return;
+        await fileOp(`/files/rename/${currentSrv.folder}`, { path: rel, new: v.trim() }, 'تمت إعادة التسمية');
+        closeM();
+      });
+    }
+
+    async function deleteItem(rel, isDir) {
+      const type = isDir ? "المجلد وكل محتوياته" : "الملف";
+      if (!confirm(`⚠️ حذف ${type} "${rel}"؟\nلا يمكن التراجع عن هذا الإجراء!`)) return;
+      await fileOp(`/files/delete/${currentSrv.folder}`, { path: rel }, 'تم الحذف');
+    }
+
+    async function deleteSelected() {
+      if (selectedFiles.size === 0) return;
+      if (!confirm(`⚠️ حذف ${selectedFiles.size} عنصر محدد نهائياً؟`)) return;
+      let ok = 0;
+      for (const rel of selectedFiles) {
+        try {
+          const r = await api(`/files/delete/${currentSrv.folder}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: rel })
+          });
+          const d = await r.json();
+          if (d.success) ok++;
+        } catch (e) { }
+      }
+      showToast(`✅ تم حذف ${ok} من ${selectedFiles.size}`);
+      clearSelection();
+      loadFiles(); loadUsage();
+    }
+
+    function downloadItem(rel) {
+      window.open(`/files/download/${currentSrv.folder}?path=${encodeURIComponent(rel)}`, '_blank');
+    }
+
+    async function copyItem(rel) {
+      await fileOp(`/files/copy/${currentSrv.folder}`, { path: rel, dest: currentPath }, 'تم النسخ');
+    }
+
+    function openMoveModal(rel) {
+      openM(`↔️ نقل "${rel.split('/').pop()}" إلى مجلد`, currentPath, async (v) => {
+        const dest = v.trim() === "/" ? "" : v.trim();
+        await fileOp(`/files/move/${currentSrv.folder}`, { path: rel, dest }, 'تم النقل');
+        closeM();
+      });
+    }
+
+    async function extractItem(rel) {
+      showToast('⏳ جاري فك الضغط...');
+      await fileOp(`/files/extract/${currentSrv.folder}`, { path: rel }, 'تم فك الضغط');
+    }
+
+    async function installPkgs() {
+      if (!confirm("تثبيت المكاتب الآن؟ (pip للـ Python / npm للـ Node.js)\nراقب السجل في تبويب الكونسول")) return;
+      try {
+        const r = await api(`/files/install/${currentSrv.folder}`, { method: 'POST' });
+        const d = await r.json();
+        showToast(d.message || 'جاري التثبيت...');
+        switchTab('console');
+      } catch (e) {
+        showToast('⚠️ فشل بدء التثبيت', true);
+      }
+    }
+
+    /* ====== الضغط ====== */
+    function openArchiveModal() {
+      if (selectedFiles.size === 0) return;
+      document.getElementById('archName').value = 'archive.zip';
+      document.getElementById('archiveBackdrop').style.display = 'flex';
+    }
+
+    function closeArchiveModal() {
+      document.getElementById('archiveBackdrop').style.display = 'none';
+    }
+
+    async function archiveSelected() {
+      const name = document.getElementById('archName').value.trim() || 'archive.zip';
+      await fileOp(`/files/archive/${currentSrv.folder}`, {
+        name, path: currentPath, items: Array.from(selectedFiles)
+      }, 'تم إنشاء الأرشيف');
+      closeArchiveModal();
+      clearSelection();
+    }
+
+    /* ====== المحرر ====== */
+    async function openEditor(rel) {
+      currentFile = rel;
+      document.getElementById('ed-title').innerText = `تحرير: ${rel}`;
+      try {
+        const res = await api(`/files/content/${currentSrv.folder}/${rel.split('/').map(encodeURIComponent).join('/')}`);
         const data = await res.json();
+        if (data.success === false) { showToast(data.message || 'لا يمكن فتح الملف', true); return; }
         document.getElementById('ed-area').value = data.content;
         document.getElementById('editor-modal').style.display = 'block';
         document.getElementById('ed-area').focus();
       } catch (error) {
-        alert('Error opening file');
+        showToast('خطأ في فتح الملف', true);
       }
     }
 
     async function saveFile() {
       try {
-        await fetch(`/files/save/${currentSrv.folder}/${currentFile}`, {
+        const content = document.getElementById('ed-area').value;
+        const r = await api(`/files/save/${currentSrv.folder}/${currentFile.split('/').map(encodeURIComponent).join('/')}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: document.getElementById('ed-area').value })
+          body: JSON.stringify({ content })
         });
-        alert("✅ File Saved Successfully");
+        const d = await r.json();
+        if (d.success) showToast('✅ تم حفظ الملف');
+        else showToast('❌ ' + (d.message || 'فشل الحفظ'), true);
       } catch (error) {
-        alert('❌ Error saving file');
+        showToast('❌ خطأ في الحفظ', true);
       }
     }
 
-    function closeEditor() { 
-      document.getElementById('editor-modal').style.display = 'none'; 
+    function closeEditor() {
+      document.getElementById('editor-modal').style.display = 'none';
     }
 
-    function changeStartup() { 
-      openM("Set Main File", currentSrv.startup_file, async (v) => { 
-        await fetch(`/server/set-startup/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ file: v })
-        }); 
-        currentSrv.startup_file = v; 
-        document.getElementById('mainFileTxt').textContent = v; 
-        closeM(); 
-      }); 
-    }
-
-    function renameF(old) { 
-      openM("Rename File", old, async (v) => { 
-        await fetch(`/files/rename/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ old, new: v })
-        }); 
-        loadFiles(); 
-        closeM(); 
-      }); 
-    }
-
-    async function deleteF(name) { 
-      if (confirm(`⚠️ Delete ${name}? This action cannot be undone.`)) { 
-        await fetch(`/files/delete/${currentSrv.folder}`, {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ name })
-        }); 
-        loadFiles(); 
-      } 
-    }
-
-    // ============ رفع الملفات التلقائي ============
-
+    /* ====== رفع الملفات ====== */
     function handleDragOver(e) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       document.getElementById('uploadArea').classList.add('dragover');
     }
 
     function handleDragLeave(e) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       document.getElementById('uploadArea').classList.remove('dragover');
     }
 
     function handleDrop(e) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       document.getElementById('uploadArea').classList.remove('dragover');
-      
       if (e.dataTransfer.files.length > 0) {
         uploadFiles(Array.from(e.dataTransfer.files));
       }
@@ -1108,52 +1481,48 @@
 
     async function uploadFiles(files) {
       if (files.length === 0 || isUploading) return;
-      
+
       isUploading = true;
-      const uploadArea = document.getElementById('uploadArea');
       const progressDiv = document.getElementById('uploadProgress');
       const progressFill = document.getElementById('progressFill');
       const uploadStatus = document.getElementById('uploadStatus');
-      
-      // إظهار مؤشر التقدم
-      uploadArea.style.opacity = '0.8';
+      const autoExtract = document.getElementById('autoExtractChk').checked;
+
       progressDiv.style.display = 'block';
-      progressFill.style.width = '0%';
+      progressFill.style.width = '30%';
       uploadStatus.textContent = `جاري رفع ${files.length} ملف...`;
-      
+
       try {
         const formData = new FormData();
-        
-        // إضافة جميع الملفات
-        files.forEach((file, index) => {
-          formData.append('files[]', file);
-        });
-        
-        const response = await fetch(`/files/upload/${currentSrv.folder}`, {
+        files.forEach(file => formData.append('files[]', file));
+        formData.append('path', currentPath);
+        formData.append('auto_extract', autoExtract ? 'true' : 'false');
+
+        progressFill.style.width = '70%';
+        uploadStatus.textContent = 'جاري المعالجة...';
+
+        const response = await api(`/files/upload/${currentSrv.folder}`, {
           method: 'POST',
           body: formData
         });
-        
-        // تحديث شريط التقدم
+
         progressFill.style.width = '100%';
-        uploadStatus.textContent = 'جاري معالجة الملفات...';
-        
         const result = await response.json();
-        
+
         if (result.success) {
-          uploadStatus.textContent = `✅ تم رفع ${result.uploaded_files.length} ملف بنجاح`;
-          
-          // إعادة تحميل قائمة الملفات بعد ثانية
-          setTimeout(() => {
-            loadFiles();
-            resetUploadArea();
-          }, 1000);
+          let msg = `✅ تم رفع ${result.uploaded_files.length} ملف`;
+          const extracted = result.uploaded_files.filter(f => f.extracted).length;
+          if (extracted > 0) msg += ` وفك ضغط ${extracted} أرشيف`;
+          if (result.errors && result.errors.length) msg += ` | ⚠️ ${result.errors.join('; ')}`;
+          uploadStatus.textContent = msg;
+          showToast(msg);
+          setTimeout(() => { loadFiles(); loadUsage(); resetUploadArea(); }, 1200);
         } else {
-          uploadStatus.textContent = '❌ فشل رفع الملفات';
-          setTimeout(resetUploadArea, 2000);
+          uploadStatus.textContent = '❌ ' + (result.message || 'فشل رفع الملفات');
+          showToast(result.message || 'فشل الرفع', true);
+          setTimeout(resetUploadArea, 2500);
         }
       } catch (error) {
-        console.error('Upload error:', error);
         uploadStatus.textContent = '❌ خطأ في رفع الملفات';
         setTimeout(resetUploadArea, 2000);
       } finally {
@@ -1162,69 +1531,61 @@
     }
 
     function resetUploadArea() {
-      const uploadArea = document.getElementById('uploadArea');
-      const progressDiv = document.getElementById('uploadProgress');
-      const fileInput = document.getElementById('fileInput');
-      
-      uploadArea.style.opacity = '1';
-      progressDiv.style.display = 'none';
-      fileInput.value = '';
+      document.getElementById('uploadProgress').style.display = 'none';
+      document.getElementById('fileInput').value = '';
     }
 
-    function openM(t, v, cb) { 
-      document.getElementById('modalBackdrop').style.display = 'flex'; 
-      document.getElementById('mTitle').textContent = t; 
-      document.getElementById('mIn').value = v; 
+    /* ====== مودالات عامة ====== */
+    function openM(t, v, cb) {
+      document.getElementById('mMessage').style.display = 'none';
+      document.getElementById('modalBackdrop').style.display = 'flex';
+      document.getElementById('mTitle').textContent = t;
+      document.getElementById('mIn').value = v;
+      document.getElementById('mIn').placeholder = 'أدخل القيمة...';
       document.getElementById('mConfirm').onclick = () => {
         cb(document.getElementById('mIn').value);
-      }; 
-    }
-
-    function closeM() { 
-      document.getElementById('modalBackdrop').style.display = 'none'; 
-    }
-
-    // تهيئة عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-      checkAuth();
-      
-      document.getElementById('newBtn').onclick = () => {
-        openM("New Server Name", "", async (name) => { 
-          if (!name.trim()) {
-            alert('Server name cannot be empty');
-            return;
-          }
-          
-          const btn = document.getElementById('newBtn');
-          const originalText = btn.innerHTML;
-          btn.innerHTML = 'Creating...';
-          btn.disabled = true;
-          
-          try {
-            await fetch('/add', {
-              method: 'POST', 
-              headers: { 'Content-Type': 'application/json' }, 
-              body: JSON.stringify({ name })
-            }); 
-            loadServers(); 
-          } catch (error) {
-            alert('Error creating server');
-          } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            closeM(); 
-          }
-        }); 
       };
+    }
+
+    function closeM() {
+      document.getElementById('modalBackdrop').style.display = 'none';
+    }
+
+    function showMMessage(text, type) {
+      const m = document.getElementById('mMessage');
+      m.textContent = text;
+      m.className = 'modal-message ' + type;
+      m.style.display = 'block';
+    }
+
+    /* ====== تهيئة ====== */
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuth();
+      document.getElementById('newBtn').onclick = openNewServer;
+      // تحديث دوري للكروت (حالة التشغيل) كل 15 ثانية
+      setInterval(() => {
+        if (document.getElementById('homeView').style.display !== 'none') loadServers();
+      }, 15000);
     });
 
-    // إغلاق النوافذ بالزر Escape
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        closeEditor();
-        closeM();
+        closeEditor(); closeM(); closeNewServer(); closeArchiveModal();
+      }
+      if (e.key === 'Enter') {
+        if (document.getElementById('newServerBackdrop').style.display === 'flex') createServer();
+        else if (document.getElementById('modalBackdrop').style.display === 'flex') document.getElementById('mConfirm').click();
       }
     });
+
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (document.getElementById('editor-modal').style.display === 'block') saveFile();
+      }
+    });
+
+    window.addEventListener('resize', createAnimatedBackground);
   </script>
 </body>
 </html>

@@ -2,10 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>لوحة المسؤول - DARK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#05060a" />
+  <title>لوحة المسؤول - Gojgui Pro</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+
     :root {
       --primary: #00d4ff;
       --admin-gold: #FFD700;
@@ -18,13 +20,9 @@
       --success: #00ff88;
       --error: #ff5555;
     }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
     body {
       font-family: 'Tajawal', sans-serif;
       background: var(--bg-dark);
@@ -32,532 +30,800 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      padding-bottom: 90px;
     }
-    
+
     .background-animation {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; overflow: hidden;
     }
-    
+
     .gold-line {
       position: absolute;
       background: linear-gradient(90deg, transparent, var(--admin-gold), transparent);
-      height: 3px;
-      filter: blur(0px);
-      opacity: 0.8;
+      height: 3px; opacity: 0.8;
       animation: goldLineMove 10s linear infinite;
       box-shadow: 0 0 30px var(--admin-gold);
     }
-    
+
     @keyframes goldLineMove {
-      0% {
-        transform: translateX(-120vw) rotate(30deg);
-      }
-      100% {
-        transform: translateX(120vw) rotate(390deg);
-      }
+      0% { transform: translateX(-120vw) rotate(30deg); }
+      100% { transform: translateX(120vw) rotate(390deg); }
     }
-    
+
     @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.05);
-        opacity: 0.9;
-      }
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
     }
-    
+
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      border-bottom: 2px solid var(--admin-gold);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    
-    .logo {
-      font-size: 24px;
-      font-weight: 900;
-      background: var(--admin-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    
-    .admin-badge {
-      background: var(--admin-gradient);
-      color: #000;
-      padding: 6px 15px;
-      border-radius: 20px;
-      font-weight: 900;
-      font-size: 14px;
-      animation: pulse 2s infinite;
-    }
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      color: var(--admin-gold);
-    }
-    
-    .logout-btn {
-      background: transparent;
-      border: 2px solid var(--error);
-      color: var(--error);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: all 0.3s;
-    }
-    
-    .logout-btn:hover {
-      background: rgba(255, 85, 85, 0.1);
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 30px auto;
-      padding: 0 20px;
-      animation: slideIn 0.7s ease-out;
-    }
-    
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-      margin-top: 20px;
-    }
-    
-    @media (max-width: 768px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .card {
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px;
-      border: 2px solid rgba(255, 215, 0, 0.3);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--admin-gradient);
-      animation: pulse 3s infinite;
-    }
-    
-    .card-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: var(--admin-gold);
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-    
-    .form-group input {
-      width: 100%;
-      padding: 14px 18px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 2px solid rgba(255, 215, 0, 0.2);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 1rem;
-      font-family: 'Tajawal', sans-serif;
-      transition: all 0.3s;
-    }
-    
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--admin-gold);
-      background: rgba(255, 215, 0, 0.05);
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-    }
-    
-    .btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--admin-gradient);
-      border: none;
-      border-radius: 12px;
-      color: #000;
-      font-size: 1.1rem;
-      font-weight: 900;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 10px;
-      font-family: 'Tajawal', sans-serif;
-      position: relative;
-      overflow: hidden;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(255, 165, 0, 0.4);
-    }
-    
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transition: 0.5s;
-    }
-    
-    .btn:hover::before {
-      left: 100%;
-    }
-    
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-      margin-top: 15px;
-    }
-    
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    
-    .message {
-      padding: 12px;
-      margin-top: 15px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: 600;
-      display: none;
-      animation: slideIn 0.5s;
-    }
-    
-    .success {
-      background: rgba(76, 175, 80, 0.15);
-      border: 2px solid rgba(76, 175, 80, 0.4);
-      color: var(--success);
-    }
-    
-    .error {
-      background: rgba(244, 67, 54, 0.15);
-      border: 2px solid rgba(244, 67, 54, 0.4);
-      color: var(--error);
-    }
-    
-    .warning {
-      background: rgba(255, 215, 0, 0.15);
-      border: 2px solid rgba(255, 215, 0, 0.4);
-      color: var(--admin-gold);
-    }
-    
-    .users-list {
-      max-height: 400px;
-      overflow-y: auto;
-      margin-top: 20px;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.3);
-    }
-    
-    .user-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-      transition: all 0.3s;
-    }
-    
-    .user-item:last-child {
-      border-bottom: none;
-    }
-    
-    .user-item:hover {
-      background: rgba(255, 215, 0, 0.05);
-    }
-    
-    .user-info-col {
-      flex: 1;
-    }
-    
-    .user-name {
-      font-weight: 700;
-      color: var(--admin-gold);
-      margin-bottom: 5px;
-    }
-    
-    .user-details {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    
-    .user-actions {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .action-btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.8rem;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    
-    .delete-btn {
-      background: rgba(255, 85, 85, 0.2);
-      color: var(--error);
-      border: 1px solid var(--error);
-    }
-    
-    .delete-btn:hover {
-      background: rgba(255, 85, 85, 0.3);
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: var(--text-muted);
-    }
-    
-    .empty-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
-      opacity: 0.5;
-    }
-    
-    .loading {
-      display: none;
-      width: 30px;
-      height: 30px;
-      border: 4px solid rgba(255, 215, 0, 0.3);
-      border-top: 4px solid var(--admin-gold);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-    
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-top: 20px;
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 20px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--admin-gold);
+      position: sticky; top: 0; z-index: 1000;
     }
-    
-    .stat-card {
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .icon-btn {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      color: var(--admin-gold); font-size: 20px;
+      cursor: pointer; padding: 8px 10px; border-radius: 10px;
+      transition: all 0.3s; min-width: 44px; min-height: 44px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    .icon-btn:hover { background: rgba(255, 215, 0, 0.2); transform: translateY(-2px); }
+
+    .logo {
+      font-size: 22px; font-weight: 900;
+      background: var(--admin-gradient);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; letter-spacing: 1px;
+    }
+
+    .admin-badge {
+      background: var(--admin-gradient);
+      color: #000; padding: 5px 12px; border-radius: 20px;
+      font-weight: 900; font-size: 12px;
+      animation: pulse 2s infinite; white-space: nowrap;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; color: var(--admin-gold); font-size: 14px; }
+
+    .logout-btn {
+      background: transparent; border: 2px solid var(--error);
+      color: var(--error); padding: 8px 14px; border-radius: 8px;
+      cursor: pointer; font-weight: 700; transition: all 0.3s;
+      font-family: 'Tajawal', sans-serif; min-height: 40px;
+    }
+
+    .logout-btn:hover { background: rgba(255, 85, 85, 0.1); }
+
+    .container {
+      max-width: 1280px; margin: 20px auto;
+      padding: 0 16px;
+      animation: slideIn 0.7s ease-out;
+    }
+
+    /* ====== نظام التابات ====== */
+    .tabs-bar {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 20px;
+      background: rgba(12, 17, 29, 0.92);
+      padding: 8px; border-radius: 16px;
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 74px; z-index: 900;
+    }
+
+    .tab-btn {
+      flex: 1; min-width: 100px;
+      padding: 12px 16px; border-radius: 12px;
+      background: transparent; border: 1px solid transparent;
+      color: var(--text-muted); font-family: 'Tajawal', sans-serif;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+      transition: all 0.3s; white-space: nowrap;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .tab-btn:hover { color: var(--admin-gold); background: rgba(255, 215, 0, 0.05); }
+
+    .tab-btn.active {
+      background: var(--admin-gradient);
+      color: #000;
+      box-shadow: 0 5px 20px rgba(255, 165, 0, 0.3);
+    }
+
+    .tab-content { display: none; animation: slideIn 0.4s ease-out; }
+    .tab-content.active { display: block; }
+
+    .dashboard-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px; margin-top: 20px; align-items: start;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border-radius: 20px; padding: 24px;
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      position: relative; overflow: hidden;
+    }
+
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--admin-gradient);
+    }
+
+    .card-title {
+      font-size: 1.3rem; margin-bottom: 20px;
+      color: var(--admin-gold); font-weight: 800;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.85rem; background: rgba(255, 215, 0, 0.15);
+      padding: 3px 12px; border-radius: 10px;
+      color: var(--admin-gold); font-weight: 700;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px; color: var(--text-muted); font-weight: 600; font-size: 14px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 10px; color: var(--text);
+      font-size: 1rem; font-family: 'Tajawal', sans-serif;
+      transition: all 0.3s; min-height: 46px;
+    }
+
+    .form-group input:focus {
+      outline: none; border-color: var(--admin-gold);
       background: rgba(255, 215, 0, 0.05);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      border: 1px solid rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
     }
-    
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--admin-gold);
-      margin-bottom: 5px;
+
+    .quota-row {
+      display: grid; grid-template-columns: 1fr 120px;
+      gap: 10px; align-items: center;
     }
-    
-    .stat-label {
-      font-size: 0.9rem;
-      color: var(--text-muted);
+
+    .quota-value {
+      text-align: center; font-weight: 800; color: var(--admin-gold);
+      background: rgba(255, 215, 0, 0.08); border: 2px solid rgba(255, 215, 0, 0.25);
+      border-radius: 10px; padding: 10px; font-size: 14px; white-space: nowrap;
+    }
+
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+    .preset-btn {
+      padding: 6px 12px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05); color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;
+      font-size: 12px; font-family: 'Tajawal', sans-serif;
+      font-weight: 700; transition: all 0.2s;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      background: rgba(255, 215, 0, 0.15);
+      border-color: var(--admin-gold); color: var(--admin-gold);
+    }
+
+    .btn {
+      width: 100%; padding: 14px;
+      background: var(--admin-gradient);
+      border: none; border-radius: 12px;
+      color: #000; font-size: 1.05rem; font-weight: 900;
+      cursor: pointer; transition: all 0.3s;
+      margin-top: 10px; font-family: 'Tajawal', sans-serif;
+      position: relative; overflow: hidden; letter-spacing: 0.5px;
+      min-height: 48px;
+    }
+
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255, 165, 0, 0.4); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn::before {
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: 0.5s;
+    }
+
+    .btn:hover::before { left: 100%; }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text); border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); box-shadow: none; }
+
+    .message {
+      padding: 12px; margin-top: 15px; border-radius: 10px;
+      text-align: center; font-weight: 600; display: none;
+      animation: slideIn 0.5s; font-size: 14px;
+    }
+
+    .success { background: rgba(76, 175, 80, 0.15); border: 2px solid rgba(76, 175, 80, 0.4); color: var(--success); }
+    .error { background: rgba(244, 67, 54, 0.15); border: 2px solid rgba(244, 67, 54, 0.4); color: var(--error); }
+    .warning { background: rgba(255, 215, 0, 0.15); border: 2px solid rgba(255, 215, 0, 0.4); color: var(--admin-gold); }
+
+    /* ====== قائمة المستخدمين ====== */
+    .search-box { position: relative; margin-bottom: 15px; }
+
+    .search-box input {
+      width: 100%; padding: 12px 16px 12px 42px;
+      background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 10px; color: var(--text);
+      font-family: 'Tajawal', sans-serif; font-size: 14px;
+    }
+
+    .search-box::after {
+      content: '🔍'; position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 14px; opacity: 0.5;
+    }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255, 215, 0, 0.05); padding: 14px 10px;
+      border-radius: 12px; text-align: center;
+      border: 1px solid rgba(255, 215, 0, 0.12);
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(255, 215, 0, 0.4); }
+
+    .stat-number { font-size: 1.7rem; font-weight: 900; color: var(--admin-gold); margin-bottom: 4px; }
+
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+    .users-list {
+      max-height: 520px; overflow-y: auto;
+      border-radius: 12px; background: rgba(0, 0, 0, 0.3);
+    }
+
+    .users-list::-webkit-scrollbar { width: 6px; }
+    .users-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    .users-list::-webkit-scrollbar-thumb { background: var(--admin-gold); border-radius: 3px; }
+
+    .user-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+      transition: all 0.3s;
+    }
+
+    .user-item:last-child { border-bottom: none; }
+    .user-item:hover { background: rgba(255, 215, 0, 0.04); }
+
+    .user-head {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;
+    }
+
+    .user-name { font-weight: 800; color: var(--admin-gold); font-size: 16px; }
+
+    .user-actions { display: flex; gap: 8px; }
+
+    .action-btn {
+      padding: 7px 12px; border-radius: 8px;
+      border: none; cursor: pointer; font-size: 12px;
+      font-weight: 700; transition: all 0.3s;
+      font-family: 'Tajawal', sans-serif; min-height: 36px;
+    }
+
+    .edit-btn { background: rgba(0, 212, 255, 0.15); color: var(--primary); border: 1px solid var(--primary); }
+    .edit-btn:hover { background: rgba(0, 212, 255, 0.3); }
+
+    .delete-btn { background: rgba(255, 85, 85, 0.15); color: var(--error); border: 1px solid var(--error); }
+    .delete-btn:hover { background: rgba(255, 85, 85, 0.3); }
+
+    .quota-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .qbar-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-muted); margin-bottom: 4px;
+    }
+
+    .qbar {
+      height: 7px; background: rgba(255, 255, 255, 0.07);
+      border-radius: 4px; overflow: hidden;
+    }
+
+    .qbar-fill {
+      height: 100%; border-radius: 4px;
+      background: var(--admin-gradient); transition: width 0.6s;
+    }
+
+    .qbar-fill.ram { background: linear-gradient(90deg, #00d4ff, #0088ff); }
+    .qbar-fill.danger { background: linear-gradient(90deg, #ff5555, #ff0000); }
+
+    .user-details { font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.8; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 44px; margin-bottom: 12px; opacity: 0.5; }
+
+    .loading {
+      display: none; width: 26px; height: 26px;
+      border: 4px solid rgba(255, 215, 0, 0.3);
+      border-top: 4px solid var(--admin-gold);
+      border-radius: 50%; animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    /* ====== جدول الخوادم ====== */
+    .server-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; gap: 10px; flex-wrap: wrap;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+      transition: all 0.3s;
+    }
+
+    .server-item:hover { background: rgba(255, 215, 0, 0.04); }
+
+    .server-info { flex: 1; min-width: 200px; }
+    .server-name { font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .server-meta { font-size: 12px; color: var(--text-muted); }
+
+    .lang-tag {
+      display: inline-flex; padding: 2px 10px; border-radius: 10px;
+      font-size: 11px; font-weight: 800;
+    }
+
+    .lang-python { background: rgba(0, 152, 74, 0.2); color: #35d07f; border: 1px solid #35d07f55; }
+    .lang-nodejs { background: rgba(87, 201, 44, 0.15); color: #87d63f; border: 1px solid #87d63f55; }
+
+    .status-dot {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700;
+    }
+
+    .status-dot::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    .status-on { color: var(--success); }
+    .status-on::before { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 1.5s infinite; }
+    .status-off { color: var(--text-muted); }
+    .status-off::before { background: var(--text-muted); }
+
+    .stop-btn { background: rgba(255, 85, 85, 0.15); color: var(--error); border: 1px solid var(--error); }
+    .stop-btn:hover { background: rgba(255, 85, 85, 0.3); }
+
+    /* ====== المودال ====== */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2000; padding: 16px; backdrop-filter: blur(5px);
+    }
+
+    .modal {
+      width: 100%; max-width: 460px;
+      background: #0c1115; border-radius: 18px;
+      padding: 24px; border: 2px solid rgba(255, 215, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+      max-height: 92vh; overflow-y: auto;
+    }
+
+    .modal h3 {
+      color: var(--admin-gold); margin-bottom: 18px;
+      font-size: 18px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .modal-actions {
+      display: flex; gap: 10px; margin-top: 20px;
+    }
+
+    .modal-actions .btn { margin-top: 0; }
+
+    /* ====== نظام معلومات ====== */
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .info-item {
+      background: rgba(255, 255, 255, 0.03); padding: 16px;
+      border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .info-item h4 { color: var(--admin-gold); margin-bottom: 10px; font-size: 15px; }
+    .info-item p { color: var(--text-muted); font-size: 13px; line-height: 2; }
+    .info-item strong { color: var(--text); }
+
+    .runtime-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05); font-size: 13px;
+      margin: 4px 2px; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .runtime-chip .ok { color: var(--success); }
+    .runtime-chip .no { color: var(--error); }
+
+    .section-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 18px; line-height: 1.8; }
+
+    /* ====== موبايل ====== */
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .quota-bars { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding-bottom: 20px; font-size: 14px; }
+
+      .topbar {
+        flex-direction: column; gap: 10px; padding: 12px;
+        flex-wrap: wrap;
+      }
+
+      .topbar-right { width: 100%; justify-content: space-between; }
+
+      .logo { font-size: 18px; }
+      .admin-badge { display: none; }
+      .user-info { width: 100%; justify-content: space-between; font-size: 13px; }
+
+      .tabs-bar { position: fixed; bottom: 0; left: 0; right: 0; border-radius: 18px 18px 0 0; padding: 8px; z-index: 1500; background: rgba(5, 6, 10, 0.97); border-top: 1px solid rgba(255, 215, 0, 0.3); backdrop-filter: blur(15px); }
+      .tab-btn { flex: 1; min-width: 0; padding: 12px 4px; font-size: 11px; flex-direction: column; gap: 4px; }
+      .tab-btn .tab-icon { font-size: 18px; }
+
+      .container { margin: 14px auto; padding: 0 12px; }
+      .card { padding: 18px 14px; border-radius: 16px; }
+      .card-title { font-size: 1.1rem; }
+
+      .quota-row { grid-template-columns: 1fr; }
+      .users-list { max-height: none; }
+      .user-item { padding: 14px 10px; }
+      .user-head { flex-direction: column; align-items: flex-start; }
+      .user-actions { width: 100%; }
+      .user-actions .action-btn { flex: 1; }
+      .stat-number { font-size: 1.4rem; }
+      .server-item { flex-direction: column; align-items: flex-start; }
+      .user-actions { gap: 6px; }
+      .btn { font-size: 0.95rem; padding: 12px; }
+      .presets { justify-content: center; }
     }
   </style>
 </head>
 <body>
-  <!-- خلفية متحركة ذهبية -->
   <div class="background-animation" id="backgroundAnimation"></div>
-  
+
   <header class="topbar">
-    <div style="display:flex;align-items:center;gap:15px">
-      <button onclick="goToDashboard()" style="background:none;border:0;color:var(--admin-gold);font-size:24px;cursor:pointer;padding:5px;border-radius:5px;">🏠</button>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="goToHosting()" title="لوحة الاستضافة">🏠</button>
       <div class="logo">لوحة المسؤول</div>
-      <div class="admin-badge">⭐ ADMIN PANEL</div>
+      <div class="admin-badge">⭐ ADMIN</div>
     </div>
-    
     <div class="user-info">
-      <span>مرحباً، <span id="adminUsername"></span></span>
+      <span>مرحباً، <strong id="adminUsername"></strong></span>
       <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
     </div>
   </header>
 
   <main class="container">
-    <div style="text-align:center;margin-bottom:30px">
-      <h1 style="color:var(--admin-gold);margin-bottom:10px">👑 لوحة إنشاء وإدارة الحسابات</h1>
-      <p style="color:var(--text-muted)">أنشئ حسابات جديدة للمستخدمين وأدر الحسابات الموجودة</p>
+    <div class="tabs-bar">
+      <button class="tab-btn active" data-tab="tabUsers" onclick="switchTab('tabUsers')">
+        <span class="tab-icon">👥</span> المستخدمين
+      </button>
+      <button class="tab-btn" data-tab="tabCreate" onclick="switchTab('tabCreate')">
+        <span class="tab-icon">➕</span> إنشاء حساب
+      </button>
+      <button class="tab-btn" data-tab="tabServers" onclick="switchTab('tabServers')">
+        <span class="tab-icon">🖥️</span> الخوادم
+      </button>
+      <button class="tab-btn" data-tab="tabMy" onclick="switchTab('tabMy')">
+        <span class="tab-icon">👑</span> حسابي
+      </button>
+      <button class="tab-btn" data-tab="tabSystem" onclick="switchTab('tabSystem')">
+        <span class="tab-icon">⚙️</span> النظام
+      </button>
     </div>
-    
-    <div class="dashboard-grid">
-      <!-- إنشاء حساب جديد -->
-      <div class="card">
-        <div class="card-title">
-          <span>➕ إنشاء حساب جديد</span>
+
+    <!-- ====== تاب المستخدمين ====== -->
+    <div class="tab-content active" id="tabUsers">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalUsers">0</div>
+          <div class="stat-label">المستخدمين</div>
         </div>
-        
-        <div class="form-group">
-          <label for="newUsername">👤 اسم المستخدم الجديد</label>
-          <input type="text" id="newUsername" placeholder="أدخل اسم مستخدم فريد">
+        <div class="stat-card">
+          <div class="stat-number" id="activeUsers">0</div>
+          <div class="stat-label">نشطين</div>
         </div>
-        
-        <div class="form-group">
-          <label for="newPassword">🔒 كلمة المرور</label>
-          <input type="password" id="newPassword" placeholder="أدخل كلمة مرور قوية (6 أحرف على الأقل)">
+        <div class="stat-card">
+          <div class="stat-number" id="todayUsers">0</div>
+          <div class="stat-label">جدد اليوم</div>
         </div>
-        
-        <div class="form-group">
-          <label for="confirmPassword">🔐 تأكيد كلمة المرور</label>
-          <input type="password" id="confirmPassword" placeholder="أعد إدخال كلمة المرور">
+        <div class="stat-card">
+          <div class="stat-number" id="diskTotal">0</div>
+          <div class="stat-label">مساحة مستخدمة (MB)</div>
         </div>
-        
-        <button class="btn" onclick="createNewUser()" id="createUserBtn">
-          <span id="createUserText">✨ إنشاء حساب جديد</span>
-          <div class="loading" id="createUserLoading"></div>
-        </button>
-        
-        <div id="createMessage" class="message"></div>
       </div>
-      
-      <!-- قائمة المستخدمين -->
+
       <div class="card">
         <div class="card-title">
           <span>👥 الحسابات الموجودة</span>
-          <span id="usersCount" style="font-size:1rem;background:rgba(255,215,0,0.2);padding:3px 10px;border-radius:10px">0</span>
+          <span class="badge" id="usersCount">0</span>
         </div>
-        
-        <!-- إحصائيات سريعة -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number" id="totalUsers">0</div>
-            <div class="stat-label">المستخدمين</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="activeUsers">0</div>
-            <div class="stat-label">نشطين</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" id="todayUsers">0</div>
-            <div class="stat-label">اليوم</div>
-          </div>
+
+        <div class="search-box">
+          <input type="text" id="userSearch" placeholder="ابحث عن مستخدم..." oninput="renderUsers()">
         </div>
-        
+
         <div class="users-list" id="usersList">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
             <p>لا توجد حسابات بعد</p>
-            <p style="font-size:0.9rem;margin-top:10px">أنشئ حسابك الأول</p>
           </div>
         </div>
-        
-        <button class="btn btn-secondary" onclick="loadUsers()" id="refreshBtn">
+
+        <button class="btn btn-secondary" onclick="loadUsers()" style="margin-top:15px">
           🔄 تحديث القائمة
         </button>
       </div>
+      <div id="usersMessage" class="message"></div>
     </div>
-    
-    <!-- معلومات النظام -->
-    <div class="card" style="margin-top:30px">
-      <div class="card-title">
-        <span>⚙️ معلومات النظام</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
-        <div>
-          <h4 style="color:var(--admin-gold);margin-bottom:10px">🎯 صلاحيات المسؤول</h4>
-          <ul style="color:var(--text-muted);padding-right:20px">
-            <li>إنشاء حسابات جديدة</li>
-            <li>حذف الحسابات</li>
-            <li>عرض جميع المستخدمين</li>
-            <li>إدارة النظام بالكامل</li>
-          </ul>
+
+    <!-- ====== تاب إنشاء حساب ====== -->
+    <div class="tab-content" id="tabCreate">
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-title"><span>➕ إنشاء حساب جديد بمواصفات مخصصة</span></div>
+          <p class="section-desc">حدد الرام والمساحة التي ستحصل عليها هذا المستخدم. سيتم إجبارهما تلقائياً عند تشغيل خوادمه.</p>
+
+          <div class="form-group">
+            <label for="newUsername"><span>👤 اسم المستخدم</span></label>
+            <input type="text" id="newUsername" placeholder="مثال: ahmed123" autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword"><span>🔒 كلمة المرور</span></label>
+            <input type="password" id="newPassword" placeholder="6 أحرف على الأقل">
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword"><span>🔐 تأكيد كلمة المرور</span></label>
+            <input type="password" id="confirmPassword" placeholder="أعد إدخال كلمة المرور">
+          </div>
+
+          <div class="form-group">
+            <label><span>🧠 حد الرام للمستخدم</span></label>
+            <div class="quota-row">
+              <input type="range" id="ramRange" min="128" max="8192" step="128" value="512" oninput="updateRamLabel()">
+              <div class="quota-value" id="ramLabel">512 MB</div>
+            </div>
+            <div class="presets">
+              <button class="preset-btn" onclick="setRam(256)">256MB</button>
+              <button class="preset-btn active" onclick="setRam(512)">512MB</button>
+              <button class="preset-btn" onclick="setRam(1024)">1GB</button>
+              <button class="preset-btn" onclick="setRam(2048)">2GB</button>
+              <button class="preset-btn" onclick="setRam(4096)">4GB</button>
+              <button class="preset-btn" onclick="setRam(8192)">8GB</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><span>💾 حد مساحة التخزين</span></label>
+            <div class="quota-row">
+              <input type="range" id="diskRange" min="256" max="20480" step="256" oninput="updateDiskLabel()">
+              <div class="quota-value" id="diskLabel">1 GB</div>
+            </div>
+            <div class="presets">
+              <button class="preset-btn" onclick="setDisk(512)">512MB</button>
+              <button class="preset-btn active" onclick="setDisk(1024)">1GB</button>
+              <button class="preset-btn" onclick="setDisk(5120)">5GB</button>
+              <button class="preset-btn" onclick="setDisk(10240)">10GB</button>
+              <button class="preset-btn" onclick="setDisk(20480)">20GB</button>
+            </div>
+          </div>
+
+          <button class="btn" onclick="createNewUser()" id="createUserBtn">
+            ✨ إنشاء الحساب
+          </button>
+
+          <div id="createMessage" class="message"></div>
         </div>
-        <div>
-          <h4 style="color:var(--admin-gold);margin-bottom:10px">📊 إحصائيات</h4>
-          <div style="color:var(--text-muted)">
-            <p>الحساب الرئيسي: <strong style="color:var(--admin-gold)">OMAR</strong></p>
-            <p>عدد الخوادم: <strong id="totalServers">0</strong></p>
-            <p>مساحة التخزين: <strong id="storageUsed">0 MB</strong></p>
+
+        <div class="card">
+          <div class="card-title"><span>📋 ملخص المواصفات</span></div>
+          <div class="info-grid">
+            <div class="info-item">
+              <h4>🧠 الرام</h4>
+              <p>الحد: <strong id="sumRam">512 MB</strong><br>سيتم إيقاف أي عملية تتجاوز الحد تلقائياً</p>
+            </div>
+            <div class="info-item">
+              <h4>💾 المساحة</h4>
+              <p>الحد: <strong id="sumDisk">1 GB</strong><br>رفع الملفات يتوقف عند الوصول للحد</p>
+            </div>
+            <div class="info-item">
+              <h4>🖥️ الخوادم</h4>
+              <p>عدد غير محدود من الخوادم<br>لغات: <strong>Python + Node.js</strong></p>
+            </div>
+            <div class="info-item">
+              <h4>📁 إدارة الملفات</h4>
+              <p>مجلدات، رفع، فك ضغط<br>نسخ، نقل، أرشفة، تحميل</p>
+            </div>
+          </div>
+          <div id="sumUsername" style="margin-top:15px;color:var(--text-muted);font-size:13px">لم يتم إدخال اسم مستخدم بعد</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== تاب الخوادم ====== -->
+    <div class="tab-content" id="tabServers">
+      <div class="card">
+        <div class="card-title">
+          <span>🖥️ خوادم جميع المستخدمين</span>
+          <span class="badge" id="serversCountBadge">0</span>
+        </div>
+        <p class="section-desc">مراقبة حية لجميع الخوادم المشغلة مع إمكانية إيقاف أي خادم فوراً.</p>
+        <div class="users-list" id="adminServersList" style="max-height:600px">
+          <div class="empty-state">
+            <div class="empty-icon">🖥️</div>
+            <p>لا توجد خوادم</p>
           </div>
         </div>
-        <div>
-          <h4 style="color:var(--admin-gold);margin-bottom:10px">⚡ إجراءات سريعة</h4>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <button class="btn" onclick="window.open('/index.html', '_blank')" style="padding:10px">
-              📋 الذهاب للوحة التحكم
-            </button>
-            <button class="btn btn-secondary" onclick="exportUsers()" style="padding:10px">
-              📥 تصدير البيانات
-            </button>
+        <button class="btn btn-secondary" onclick="loadAdminServers()" style="margin-top:15px">🔄 تحديث</button>
+      </div>
+      <div id="serversMessage" class="message"></div>
+    </div>
+
+    <!-- ====== تاب حسابي ====== -->
+    <div class="tab-content" id="tabMy">
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-title"><span>👑 حساب الاستضافة الخاص بي</span></div>
+          <p class="section-desc">
+            أنت المسؤول — خصص راماتك ومساحتك كما تريد، ثم ادخل لوحة الاستضافة وأنشئ خوادمك الخاصة.
+            اختر <strong>-1</strong> للعمل بلا حدود.
+          </p>
+
+          <div class="form-group">
+            <label><span>🧠 حصة الرام الخاصة بي</span></label>
+            <div class="quota-row">
+              <input type="range" id="myRamRange" min="128" max="8192" step="128" oninput="updateMyRamLabel()">
+              <div class="quota-value" id="myRamLabel">∞</div>
+            </div>
+            <div class="presets">
+              <button class="preset-btn" onclick="setMyRam(-1)">بلا حدود</button>
+              <button class="preset-btn" onclick="setMyRam(512)">512MB</button>
+              <button class="preset-btn" onclick="setMyRam(2048)">2GB</button>
+              <button class="preset-btn" onclick="setMyRam(4096)">4GB</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><span>💾 حصة المساحة الخاصة بي</span></label>
+            <div class="quota-row">
+              <input type="range" id="myDiskRange" min="256" max="51200" step="256" oninput="updateMyDiskLabel()">
+              <div class="quota-value" id="myDiskLabel">∞</div>
+            </div>
+            <div class="presets">
+              <button class="preset-btn" onclick="setMyDisk(-1)">بلا حدود</button>
+              <button class="preset-btn" onclick="setMyDisk(1024)">1GB</button>
+              <button class="preset-btn" onclick="setMyDisk(10240)">10GB</button>
+              <button class="preset-btn" onclick="setMyDisk(51200)">50GB</button>
+            </div>
+          </div>
+
+          <button class="btn" onclick="saveMyQuotas()" id="saveMyQuotasBtn">💾 حفظ مواصفاتي</button>
+          <button class="btn btn-secondary" onclick="goToHosting()">🚀 اذهب للوحة الاستضافة وأنشئ خوادمي</button>
+          <div id="myQuotasMessage" class="message"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span>📊 استهلاكي الحالي</span></div>
+          <div class="quota-bars" style="flex-direction:column;gap:16px">
+            <div>
+              <div class="qbar-label"><span>المساحة المستخدمة</span><span id="myDiskUsedTxt">0 MB</span></div>
+              <div class="qbar"><div class="qbar-fill" id="myDiskBar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="info-grid" style="margin-top:18px">
+            <div class="info-item">
+              <h4>🧠 رامي الحالي</h4>
+              <p><strong id="myCurrentRam">∞</strong></p>
+            </div>
+            <div class="info-item">
+              <h4>💾 مساحتي الحالية</h4>
+              <p><strong id="myCurrentDisk">∞</strong></p>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ====== تاب النظام ====== -->
+    <div class="tab-content" id="tabSystem">
+      <div class="card">
+        <div class="card-title"><span>⚙️ حالة النظام والبيئات</span></div>
+        <div class="info-grid" id="systemInfoGrid">
+          <div class="info-item"><h4>⏳ جاري التحميل...</h4><p>...</p></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px">
+        <div class="card-title"><span>⚡ إجراءات سريعة</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+          <button class="btn" onclick="goToHosting()" style="padding:12px">🚀 لوحة الاستضافة</button>
+          <button class="btn btn-secondary" onclick="exportUsersData()" style="padding:12px">📥 تصدير بيانات المستخدمين</button>
+          <button class="btn btn-secondary" onclick="loadStats()" style="padding:12px">🔄 تحديث الإحصائيات</button>
+        </div>
+      </div>
+      <div id="sysMessage" class="message"></div>
     </div>
   </main>
 
+  <!-- ====== مودال تعديل مستخدم ====== -->
+  <div class="modal-backdrop" id="editModalBackdrop">
+    <div class="modal">
+      <h3>
+        <span>✏️ تعديل: <span id="editUsernameTitle"></span></span>
+        <button class="icon-btn" onclick="closeEditModal()" style="font-size:16px">✖</button>
+      </h3>
+
+      <div class="form-group">
+        <label><span>🧠 حد الرام (MB)</span></label>
+        <input type="number" id="editRam" min="32" max="65536" placeholder="32 - 65536 أو -1">
+      </div>
+
+      <div class="form-group">
+        <label><span>💾 حد المساحة (MB)</span></label>
+        <input type="number" id="editDisk" min="16" max="1048576" placeholder="16 - 1048576 أو -1">
+      </div>
+
+      <div class="form-group">
+        <label><span>🔑 كلمة مرور جديدة (اختياري)</span></label>
+        <input type="password" id="editPassword" placeholder="اتركه فارغاً للإبقاء على الحالية">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEditModal()">إلغاء</button>
+        <button class="btn" onclick="saveUserEdit()">💾 حفظ</button>
+      </div>
+      <div id="editMessage" class="message"></div>
+    </div>
+  </div>
+
   <script>
     let currentAdmin = "";
-    
-    // إنشاء الخلفية المتحركة الذهبية
+    let allUsers = [];
+    let adminServers = [];
+
+    // ====== الخلفية المتحركة ======
     function createGoldBackground() {
       const container = document.getElementById('backgroundAnimation');
       container.innerHTML = '';
-      
-      for (let i = 0; i < 12; i++) {
+      const count = window.innerWidth < 600 ? 6 : 12;
+      for (let i = 0; i < count; i++) {
         const line = document.createElement('div');
         line.className = 'gold-line';
         line.style.top = `${Math.random() * 100}%`;
@@ -569,260 +835,513 @@
         container.appendChild(line);
       }
     }
-    
-    // التحقق من صلاحيات المسؤول
+
+    // ====== التحقق من صلاحيات المسؤول ======
     async function checkAdminAuth() {
       try {
         const response = await fetch('/api/current_user');
         const data = await response.json();
-        
-        if (!data.success) {
-          window.location.href = '/login';
-          return;
-        }
-        
-        if (!data.is_admin) {
-          // إذا لم يكن مسؤولاً، توجيهه للوحة التحكم العادية
-          window.location.href = '/index.html';
-          return;
-        }
-        
+        if (!data.success) { window.location.href = '/login'; return; }
+        if (!data.is_admin) { window.location.href = '/index.html'; return; }
+
         currentAdmin = data.username;
         document.getElementById('adminUsername').textContent = currentAdmin;
-        
         createGoldBackground();
         loadUsers();
+        loadAdminServers();
         loadStats();
-        
+        loadMyQuotas();
       } catch (error) {
         window.location.href = '/login';
       }
     }
-    
-    // الذهاب للوحة التحكم الرئيسية
-    function goToDashboard() {
-      window.location.href = '/index.html';
+
+    // ====== التابات ======
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+      if (tabId === 'tabServers') loadAdminServers();
+      if (tabId === 'tabSystem') loadStats();
+      if (tabId === 'tabMy') loadMyQuotas();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    // تسجيل الخروج
+
+    // ====== التنقل ======
+    function goToHosting() { window.location.href = '/index.html'; }
+
     async function logout() {
-      if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login';
-      }
+      if (!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login';
     }
-    
-    // إنشاء مستخدم جديد
+
+    // ====== إنشاء حساب ======
+    function updateRamLabel() {
+      const v = parseInt(document.getElementById('ramRange').value);
+      document.getElementById('ramLabel').textContent = v >= 1024 ? (v / 1024) + ' GB' : v + ' MB';
+      document.getElementById('sumRam').textContent = document.getElementById('ramLabel').textContent;
+    }
+    function updateDiskLabel() {
+      const v = parseInt(document.getElementById('diskRange').value);
+      document.getElementById('diskLabel').textContent = v >= 1024 ? (v / 1024) + ' GB' : v + ' MB';
+      document.getElementById('sumDisk').textContent = document.getElementById('diskLabel').textContent;
+    }
+    function setRam(v) {
+      const range = document.getElementById('ramRange');
+      range.value = Math.min(Math.max(v, range.min), range.max);
+      updateRamLabel();
+      document.querySelectorAll('#tabCreate .presets')[0].querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    }
+    function setDisk(v) {
+      const range = document.getElementById('diskRange');
+      range.value = Math.min(Math.max(v, range.min), range.max);
+      updateDiskLabel();
+      document.querySelectorAll('#tabCreate .presets')[1].querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const u = document.getElementById('newUsername');
+      if (u) u.addEventListener('input', () => {
+        document.getElementById('sumUsername').textContent = u.value.trim() ? `👤 الاسم: ${u.value.trim()}` : 'لم يتم إدخال اسم مستخدم بعد';
+      });
+    });
+
     async function createNewUser() {
       const username = document.getElementById('newUsername').value.trim();
       const password = document.getElementById('newPassword').value.trim();
       const confirmPassword = document.getElementById('confirmPassword').value.trim();
-      
+      const ram = parseInt(document.getElementById('ramRange').value);
+      const disk = parseInt(document.getElementById('diskRange').value);
+
       if (!username || !password || !confirmPassword) {
-        showMessage('يرجى ملء جميع الحقول', 'error', 'createMessage');
-        return;
+        showMessage('يرجى ملء جميع الحقول', 'error', 'createMessage'); return;
       }
-      
       if (password.length < 6) {
-        showMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error', 'createMessage');
-        return;
+        showMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error', 'createMessage'); return;
       }
-      
       if (password !== confirmPassword) {
-        showMessage('كلمة المرور غير متطابقة', 'error', 'createMessage');
-        return;
+        showMessage('كلمة المرور غير متطابقة', 'error', 'createMessage'); return;
       }
-      
-      if (username.toLowerCase() === 'hama121') {
-        showMessage('لا يمكن استخدام هذا الاسم', 'error', 'createMessage');
-        return;
-      }
-      
+
       const btn = document.getElementById('createUserBtn');
-      const text = document.getElementById('createUserText');
-      const loading = document.getElementById('createUserLoading');
-      
-      text.style.display = 'none';
-      loading.style.display = 'block';
       btn.disabled = true;
-      
+      btn.textContent = '⏳ جاري الإنشاء...';
+
       try {
         const response = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, password, ram_limit_mb: ram, disk_limit_mb: disk })
         });
-        
         const data = await response.json();
-        
+
         if (data.success) {
-          showMessage('✅ ' + data.message, 'success', 'createMessage');
-          
-          // تنظيف الحقول
+          showMessage(`✅ ${data.message} — الرام: ${ram}MB | المساحة: ${disk}MB`, 'success', 'createMessage');
           document.getElementById('newUsername').value = '';
           document.getElementById('newPassword').value = '';
           document.getElementById('confirmPassword').value = '';
-          
-          // تحديث القائمة
-          setTimeout(() => {
-            loadUsers();
-            loadStats();
-          }, 1000);
+          setTimeout(() => { loadUsers(); loadStats(); }, 800);
         } else {
           showMessage('❌ ' + data.message, 'error', 'createMessage');
         }
       } catch (error) {
         showMessage('⚠️ خطأ في الاتصال بالخادم', 'error', 'createMessage');
       } finally {
-        text.style.display = 'inline';
-        loading.style.display = 'none';
         btn.disabled = false;
+        btn.textContent = '✨ إنشاء الحساب';
       }
     }
-    
-    // تحميل قائمة المستخدمين
+
+    // ====== قائمة المستخدمين ======
     async function loadUsers() {
       try {
         const response = await fetch('/api/admin/users');
         const data = await response.json();
-        
         if (data.success) {
-          const usersList = document.getElementById('usersList');
-          const usersCount = document.getElementById('usersCount');
-          
-          usersCount.textContent = data.users.length;
-          
-          if (data.users.length === 0) {
-            usersList.innerHTML = `
-              <div class="empty-state">
-                <div class="empty-icon">📭</div>
-                <p>لا توجد حسابات بعد</p>
-                <p style="font-size:0.9rem;margin-top:10px">أنشئ حسابك الأول</p>
-              </div>
-            `;
-          } else {
-            usersList.innerHTML = data.users.map(user => `
-              <div class="user-item">
-                <div class="user-info-col">
-                  <div class="user-name">${user.username}</div>
-                  <div class="user-details">
-                    أنشئ في: ${new Date(user.created_at).toLocaleDateString('ar-SA')}<br>
-                    آخر دخول: ${user.last_login ? new Date(user.last_login).toLocaleDateString('ar-SA') : 'لم يسجل دخول بعد'}
-                  </div>
-                </div>
-                <div class="user-actions">
-                  <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">
-                    🗑️ حذف
-                  </button>
-                </div>
-              </div>
-            `).join('');
-          }
+          allUsers = data.users;
+          renderUsers();
+          updateStatsFromUsers();
         }
       } catch (error) {
         console.error('Error loading users:', error);
       }
     }
-    
-    // تحميل الإحصائيات
-    async function loadStats() {
-      try {
-        const usersResponse = await fetch('/api/admin/users');
-        const usersData = await usersResponse.json();
-        
-        if (usersData.success) {
-          const totalUsers = usersData.users.length;
-          const today = new Date().toLocaleDateString('ar-SA');
-          
-          // حساب المستخدمين النشطين (الذين سجلوا دخولاً في آخر 30 يوم)
-          const activeUsers = usersData.users.filter(user => {
-            if (!user.last_login) return false;
-            const lastLogin = new Date(user.last_login);
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return lastLogin > thirtyDaysAgo;
-          }).length;
-          
-          // حساب المستخدمين المنشئين اليوم
-          const todayUsers = usersData.users.filter(user => {
-            const createdDate = new Date(user.created_at).toLocaleDateString('ar-SA');
-            return createdDate === today;
-          }).length;
-          
-          document.getElementById('totalUsers').textContent = totalUsers;
-          document.getElementById('activeUsers').textContent = activeUsers;
-          document.getElementById('todayUsers').textContent = todayUsers;
-        }
-      } catch (error) {
-        console.error('Error loading stats:', error);
-      }
-    }
-    
-    // حذف مستخدم
-    async function deleteUser(username) {
-      if (!confirm(`⚠️ هل أنت متأكد من حذف المستخدم "${username}"؟\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+
+    function renderUsers() {
+      const q = (document.getElementById('userSearch').value || '').toLowerCase();
+      const list = allUsers.filter(u => u.username.toLowerCase().includes(q));
+      const usersList = document.getElementById('usersList');
+
+      document.getElementById('usersCount').textContent = allUsers.length;
+
+      if (list.length === 0) {
+        usersList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>${q ? 'لا نتائج مطابقة للبحث' : 'لا توجد حسابات بعد'}</p>
+          </div>`;
         return;
       }
-      
+
+      usersList.innerHTML = list.map(user => {
+        const ramTxt = user.ram_limit_mb === -1 ? '∞' : (user.ram_limit_mb >= 1024 ? (user.ram_limit_mb / 1024) + 'GB' : user.ram_limit_mb + 'MB');
+        const diskTxt = user.disk_limit_mb === -1 ? '∞' : (user.disk_limit_mb >= 1024 ? (user.disk_limit_mb / 1024) + 'GB' : user.disk_limit_mb + 'MB');
+        const diskPct = user.disk_percent || 0;
+        const diskClass = diskPct > 85 ? 'danger' : '';
+        return `
+        <div class="user-item">
+          <div class="user-head">
+            <div>
+              <span class="user-name">${user.username}</span>
+              <span class="badge" style="margin-right:8px">🖥️ ${user.servers_count} خوادم</span>
+            </div>
+            <div class="user-actions">
+              <button class="action-btn edit-btn" onclick="openEditModal('${user.username}')">✏️ تعديل الحصص</button>
+              <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">🗑️ حذف</button>
+            </div>
+          </div>
+          <div class="quota-bars">
+            <div>
+              <div class="qbar-label"><span>🧠 الرام</span><span>${ramTxt}</span></div>
+              <div class="qbar"><div class="qbar-fill ram" style="width:${user.ram_limit_mb === -1 ? 0 : Math.min(100, user.ram_limit_mb / 8192 * 100)}%"></div></div>
+            </div>
+            <div>
+              <div class="qbar-label"><span>💾 المساحة</span><span>${user.disk_used_mb} / ${diskTxt}</span></div>
+              <div class="qbar"><div class="qbar-fill ${diskClass}" style="width:${diskPct}%"></div></div>
+            </div>
+          </div>
+          <div class="user-details">
+            📅 أنشئ: ${formatDate(user.created_at)} | ⏰ آخر دخول: ${user.last_login ? formatDate(user.last_login) : 'أبداً'}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function updateStatsFromUsers() {
+      const total = allUsers.length;
+      const active = allUsers.filter(u => {
+        if (!u.last_login) return false;
+        return new Date(u.last_login) > new Date(Date.now() - 30 * 86400000);
+      }).length;
+      const today = new Date().toDateString();
+      const todayUsers = allUsers.filter(u => new Date(u.created_at).toDateString() === today).length;
+      const diskTotal = allUsers.reduce((s, u) => s + (parseFloat(u.disk_used_mb) || 0), 0);
+
+      document.getElementById('totalUsers').textContent = total;
+      document.getElementById('activeUsers').textContent = active;
+      document.getElementById('todayUsers').textContent = todayUsers;
+      document.getElementById('diskTotal').textContent = Math.round(diskTotal);
+    }
+
+    function formatDate(iso) {
+      try { return new Date(iso).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }); }
+      catch (e) { return iso || 'غير معروف'; }
+    }
+
+    // ====== تعديل حصص مستخدم ======
+    function openEditModal(username) {
+      const user = allUsers.find(u => u.username === username);
+      if (!user) return;
+      document.getElementById('editUsernameTitle').textContent = username;
+      document.getElementById('editRam').value = user.ram_limit_mb;
+      document.getElementById('editDisk').value = user.disk_limit_mb;
+      document.getElementById('editPassword').value = '';
+      document.getElementById('editMessage').style.display = 'none';
+      document.getElementById('editModalBackdrop').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModalBackdrop').style.display = 'none';
+    }
+
+    async function saveUserEdit() {
+      const username = document.getElementById('editUsernameTitle').textContent;
+      const ram = parseInt(document.getElementById('editRam').value);
+      const disk = parseInt(document.getElementById('editDisk').value);
+      const password = document.getElementById('editPassword').value.trim();
+
+      if (isNaN(ram) || isNaN(disk)) {
+        showMessage('قيم الرام والمساحة مطلوبة', 'error', 'editMessage'); return;
+      }
+
+      const body = { username, ram_limit_mb: ram, disk_limit_mb: disk };
+      if (password) body.password = password;
+
+      try {
+        const response = await fetch('/api/admin/update-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        if (data.success) {
+          showMessage('✅ ' + data.message, 'success', 'editMessage');
+          setTimeout(() => { closeEditModal(); loadUsers(); }, 900);
+        } else {
+          showMessage('❌ ' + data.message, 'error', 'editMessage');
+        }
+      } catch (error) {
+        showMessage('⚠️ خطأ في الاتصال', 'error', 'editMessage');
+      }
+    }
+
+    // ====== حذف مستخدم ======
+    async function deleteUser(username) {
+      if (!confirm(`⚠️ حذف المستخدم "${username}"؟\nسيتم حذف جميع خوادمه وملفاته نهائياً!`)) return;
+
       try {
         const response = await fetch('/api/admin/delete-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username })
         });
-        
         const data = await response.json();
-        
         if (data.success) {
-          showMessage(`✅ تم حذف المستخدم "${username}" بنجاح`, 'success', 'createMessage');
-          setTimeout(() => {
-            loadUsers();
-            loadStats();
-          }, 1000);
+          showMessage(`✅ تم حذف "${username}" بنجاح`, 'success', 'usersMessage');
+          loadUsers(); loadStats(); loadAdminServers();
         } else {
-          showMessage('❌ ' + data.message, 'error', 'createMessage');
+          showMessage('❌ ' + data.message, 'error', 'usersMessage');
         }
       } catch (error) {
-        showMessage('⚠️ خطأ في حذف المستخدم', 'error', 'createMessage');
+        showMessage('⚠️ خطأ في حذف المستخدم', 'error', 'usersMessage');
       }
     }
-    
-    // تصدير البيانات
-    function exportUsers() {
-      showMessage('⏳ جاري تصدير البيانات...', 'warning', 'createMessage');
-      setTimeout(() => {
-        showMessage('✅ تم تصدير البيانات بنجاح', 'success', 'createMessage');
-      }, 1500);
+
+    // ====== خوادم المستخدمين (للأدمن) ======
+    async function loadAdminServers() {
+      try {
+        const response = await fetch('/api/admin/servers');
+        const data = await response.json();
+        if (data.success) {
+          adminServers = data.servers;
+          renderAdminServers();
+        }
+      } catch (error) {
+        console.error('Error loading servers:', error);
+      }
     }
-    
-    // عرض رسالة
+
+    function renderAdminServers() {
+      const list = document.getElementById('adminServersList');
+      document.getElementById('serversCountBadge').textContent = adminServers.length;
+
+      if (adminServers.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🖥️</div><p>لا توجد خوادم بعد</p></div>`;
+        return;
+      }
+
+      list.innerHTML = adminServers.map(s => `
+        <div class="server-item">
+          <div class="server-info">
+            <div class="server-name">${s.title} <span style="color:var(--text-muted);font-size:12px;font-weight:400">(${s.username})</span></div>
+            <div class="server-meta">
+              <span class="lang-tag lang-${s.language}">${s.language === 'nodejs' ? '🟢 Node.js' : '🐍 Python'}</span>
+              &nbsp; ${s.startup_file ? '⚡ ' + s.startup_file : '⭕ بدون ملف رئيسي'}
+              &nbsp; 💾 ${s.size_mb} MB ${s.running ? '&nbsp; 🧠 ' + s.mem : ''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="status-dot ${s.running ? 'status-on' : 'status-off'}">${s.running ? 'يعمل' : 'متوقف'}</span>
+            ${s.running ? `<button class="action-btn stop-btn" onclick="adminStopServer('${s.username}', '${s.folder}')">⏹️ إيقاف</button>` : ''}
+          </div>
+        </div>`).join('');
+    }
+
+    async function adminStopServer(username, folder) {
+      if (!confirm(`إيقاف خادم "${folder}" الخاص بـ "${username}"؟`)) return;
+      try {
+        const response = await fetch('/api/admin/stop-server', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, folder })
+        });
+        const data = await response.json();
+        showMessage(data.success ? '✅ ' + data.message : '❌ ' + data.message,
+                    data.success ? 'success' : 'error', 'serversMessage');
+        setTimeout(loadAdminServers, 600);
+      } catch (error) {
+        showMessage('⚠️ خطأ في الاتصال', 'error', 'serversMessage');
+      }
+    }
+
+    // ====== إحصائيات النظام ======
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/admin/stats');
+        const data = await response.json();
+        if (!data.success) return;
+
+        const sys = data.system;
+        const rt = sys.runtimes;
+        const diskPct = Math.round(sys.disk_used_gb / sys.disk_total_gb * 100);
+
+        document.getElementById('systemInfoGrid').innerHTML = `
+          <div class="info-item">
+            <h4>🖥️ موارد النظام</h4>
+            <p>
+              المعالج: <strong>${sys.cpu_percent}%</strong><br>
+              الرام: <strong>${sys.ram_used_percent}%</strong> من ${sys.ram_total_mb >= 1024 ? Math.round(sys.ram_total_mb / 1024) + 'GB' : sys.ram_total_mb + 'MB'}<br>
+              القرص: <strong>${sys.disk_used_gb}GB</strong> / ${sys.disk_total_gb}GB (${diskPct}%)
+            </p>
+          </div>
+          <div class="info-item">
+            <h4>🐍 Python</h4>
+            <p><span class="runtime-chip"><span class="ok">✔</span> متاح — ${sys.python_version}</span></p>
+          </div>
+          <div class="info-item">
+            <h4>🟢 Node.js</h4>
+            <p>${rt.node.available
+              ? `<span class="runtime-chip"><span class="ok">✔</span> متاح — ${rt.node.version || 'v?'}</span>`
+              : `<span class="runtime-chip"><span class="no">✖</span> غير مثبت على الخادم</span>`}</p>
+          </div>
+          <div class="info-item">
+            <h4>📦 npm</h4>
+            <p>${rt.npm.available
+              ? `<span class="runtime-chip"><span class="ok">✔</span> متاح — ${rt.npm.version || 'v?'}</span>`
+              : `<span class="runtime-chip"><span class="no">✖</span> غير متاح</span>`}</p>
+          </div>
+          <div class="info-item">
+            <h4>📊 لوحة الاستضافة</h4>
+            <p>
+              المستخدمون: <strong>${data.total_users}</strong><br>
+              الخوادم: <strong>${data.total_servers}</strong> (${data.running_servers} يعمل)<br>
+              مساحة مستخدمة: <strong>${data.disk_used_mb} MB</strong>
+            </p>
+          </div>
+          <div class="info-item">
+            <h4>💡 معلومات مفيدة</h4>
+            <p>
+              فك الضغط: <strong>ZIP / TAR / GZ / 7Z</strong><br>
+              إدارة كاملة: نسخ، نقل، أرشفة<br>
+              مراقبة رام تلقائية لكل عملية
+            </p>
+          </div>`;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    // ====== حصص الأدمن نفسه ======
+    async function loadMyQuotas() {
+      try {
+        const response = await fetch('/api/admin/my-quotas');
+        const data = await response.json();
+        if (!data.success) return;
+
+        const fmt = (v) => v === -1 ? '∞ بلا حدود' : (v >= 1024 ? (v / 1024) + ' GB' : v + ' MB');
+        document.getElementById('myCurrentRam').textContent = fmt(data.ram_limit_mb);
+        document.getElementById('myCurrentDisk').textContent = fmt(data.disk_limit_mb);
+
+        // ضبط السلايدرز
+        const ramR = document.getElementById('myRamRange');
+        const diskR = document.getElementById('myDiskRange');
+        if (data.ram_limit_mb === -1) { ramR.disabled = true; document.getElementById('myRamLabel').textContent = '∞'; }
+        else { ramR.disabled = false; ramR.value = Math.min(data.ram_limit_mb, ramR.max); updateMyRamLabel(); }
+        if (data.disk_limit_mb === -1) { diskR.disabled = true; document.getElementById('myDiskLabel').textContent = '∞'; }
+        else { diskR.disabled = false; diskR.value = Math.min(data.disk_limit_mb, diskR.max); updateMyDiskLabel(); }
+
+        // استهلاك
+        document.getElementById('myDiskUsedTxt').textContent = data.disk_used_mb + ' MB';
+        const limit = data.disk_limit_mb;
+        const pct = limit === -1 ? 0 : Math.min(100, Math.round(data.disk_used_mb / limit * 100));
+        document.getElementById('myDiskBar').style.width = pct + '%';
+        document.getElementById('myDiskBar').className = 'qbar-fill' + (pct > 85 ? ' danger' : '');
+      } catch (error) {
+        console.error('Error loading my quotas:', error);
+      }
+    }
+
+    function updateMyRamLabel() {
+      const v = parseInt(document.getElementById('myRamRange').value);
+      document.getElementById('myRamLabel').textContent = v >= 1024 ? (v / 1024) + ' GB' : v + ' MB';
+    }
+    function updateMyDiskLabel() {
+      const v = parseInt(document.getElementById('myDiskRange').value);
+      document.getElementById('myDiskLabel').textContent = v >= 1024 ? (v / 1024) + ' GB' : v + ' MB';
+    }
+    function setMyRam(v) {
+      const r = document.getElementById('myRamRange');
+      if (v === -1) { r.disabled = true; document.getElementById('myRamLabel').textContent = '∞'; }
+      else { r.disabled = false; r.value = Math.min(v, r.max); updateMyRamLabel(); }
+    }
+    function setMyDisk(v) {
+      const r = document.getElementById('myDiskRange');
+      if (v === -1) { r.disabled = true; document.getElementById('myDiskLabel').textContent = '∞'; }
+      else { r.disabled = false; r.value = Math.min(v, r.max); updateMyDiskLabel(); }
+    }
+
+    async function saveMyQuotas() {
+      const ramR = document.getElementById('myRamRange');
+      const diskR = document.getElementById('myDiskRange');
+      const body = {};
+      body.ram_limit_mb = ramR.disabled ? -1 : parseInt(ramR.value);
+      body.disk_limit_mb = diskR.disabled ? -1 : parseInt(diskR.value);
+
+      const btn = document.getElementById('saveMyQuotasBtn');
+      btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+
+      try {
+        const response = await fetch('/api/admin/my-quotas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showMessage(data.success ? '✅ ' + data.message : '❌ ' + data.message,
+                    data.success ? 'success' : 'error', 'myQuotasMessage');
+        if (data.success) loadMyQuotas();
+      } catch (error) {
+        showMessage('⚠️ خطأ في الاتصال', 'error', 'myQuotasMessage');
+      } finally {
+        btn.disabled = false; btn.textContent = '💾 حفظ مواصفاتي';
+      }
+    }
+
+    // ====== تصدير البيانات ======
+    function exportUsersData() {
+      if (allUsers.length === 0) { loadUsers().then(() => exportUsersData()); return; }
+      const data = JSON.stringify(allUsers, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `gojgui-users-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showMessage('✅ تم تصدير البيانات', 'success', 'sysMessage');
+    }
+
+    // ====== أدوات ======
     function showMessage(text, type, elementId = 'createMessage') {
       const msgDiv = document.getElementById(elementId);
       msgDiv.textContent = text;
       msgDiv.className = `message ${type}`;
       msgDiv.style.display = 'block';
-      
-      setTimeout(() => {
-        msgDiv.style.display = 'none';
-      }, 5000);
+      setTimeout(() => { msgDiv.style.display = 'none'; }, 6000);
     }
-    
-    // دعم زر Enter في حقول إنشاء الحساب
-    document.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
+
+    document.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && document.getElementById('tabCreate').classList.contains('active')) {
         createNewUser();
       }
     });
-    
-    // تهيئة الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-      checkAdminAuth();
-      
-      // تحديث الخلفية كل 30 ثانية
-      setInterval(() => {
-        createGoldBackground();
-      }, 30000);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeEditModal();
     });
+
+    // ====== تهيئة ======
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAdminAuth();
+      updateRamLabel();
+      updateDiskLabel();
+      // تحديث الخوادم كل 10 ثوان
+      setInterval(() => {
+        if (document.getElementById('tabServers').classList.contains('active')) loadAdminServers();
+      }, 10000);
+    });
+
+    window.addEventListener('resize', createGoldBackground);
   </script>
 </body>
 </html>

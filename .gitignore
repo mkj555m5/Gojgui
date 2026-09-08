@@ -1,0 +1,8 @@
+# بيانات المستخدمين (لا تُرفع أبداً)
+users.json
+remember_tokens.json
+USERS/
+tmp_dl/
+__pycache__/
+*.pyc
+.DS_Store

@@ -2,7 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>VPS DARK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#05060a" />
+  <title>Gojgui Pro — تسجيل الدخول</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
     
@@ -23,6 +25,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
     
     body {
@@ -385,10 +388,50 @@
       
       .logo {
         font-size: 2.8rem;
+        letter-spacing: 2px;
       }
       
       .tagline {
         font-size: 1rem;
+      }
+      
+      .form-title {
+        font-size: 1.5rem;
+      }
+      
+      .form-group input {
+        font-size: 1rem;
+        padding: 14px 16px;
+      }
+      
+      .btn-login {
+        font-size: 1.05rem;
+        padding: 16px;
+        min-height: 52px;
+      }
+      
+      .login-container {
+        padding: 14px;
+        align-items: flex-start;
+        padding-top: 8vh;
+      }
+      
+      .form-title {
+        margin-bottom: 24px;
+      }
+      
+      .form-group {
+        margin-bottom: 18px;
+      }
+    }
+    
+    @media (max-width: 380px) {
+      .logo {
+        font-size: 2.2rem;
+      }
+      
+      .card {
+        padding: 24px 14px;
       }
     }
   </style>
@@ -399,8 +442,8 @@
   <div class="login-container">
     <div class="card">
       <div class="logo-section">
-        <div class="logo"> VPS DARK</div>
-        <div class="tagline">لوحة تحكم احترافية للاستضافة</div>
+        <div class="logo"> GOJGUI PRO</div>
+        <div class="tagline">لوحة تحكم احترافية — استضافة Python و Node.js</div>
       </div>
       
       <div id="loginForm">

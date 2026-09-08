@@ -2,3 +2,4 @@ Flask
 psutil
 requests
 pycryptodome
+py7zr
